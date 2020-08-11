@@ -91,6 +91,56 @@ def merge_data_files(columns, data_root, all_in_one_file):
 
 if __name__ == "__main__":
     all_in_one_file = 'all_in_one.csv'
+def get_routes_from_file(data_file: Path):
+    """
+    Get the routes that show up in a single data file.
+
+    Parameters
+    ----------
+    data_file: Path
+        The path of the data file to get the routes.
+
+    Returns
+    -------
+    set[int]: A set of routes
+    """
+    data = pd.read_csv(data_file, sep=",")
+    routes = set(data['route_id_curr'].values.tolist())
+    return routes
+
+
+def routes_showing_up(data_root: Path):
+    """
+    Get all routes that show up in all data files under the given directory.
+    One certain route does not need to show up in each and every data file.
+
+    Parameters
+    ----------
+    data_root: Path
+        The root of the data files.
+    """
+    routes = set()
+    for name in os.listdir(data_root):
+        full_name = data_root / name
+        if full_name.is_file() and name.endswith(".csv"):
+            cur_routes = get_routes_from_file(full_name)
+            routes = routes.union(cur_routes)
+
+    routes = list(routes)
+    routes.sort()
+    print(f"all routes: {routes}\tcount: {len(routes)}")
+
+
+def data_statistic(data_root: Path):
+    """
+    Get some statistical results for the merged data file under the data root.
+
+    Parameters
+    ----------
+    data_root: Path
+        The root of the merged data files.
+    """
+    routes_showing_up(data_root)
 
     if not os.path.isfile(all_in_one_file):
         columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est', 'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num', 'off route', 'run_id']
@@ -100,7 +150,9 @@ if __name__ == "__main__":
         data = merge_data_files(columns, data_root, all_in_one_file)
     else:
         data = pd.read_csv(all_in_one_file, sep=',')
+    data_root = Path(".") / 'data'
 
+    data_statistic(data_root)
     routes = list(set(data['route_id_curr'].values.tolist()))
     routes = sorted(routes)
     print(f"all routes: {routes}\tcount: {len(routes)}")  # 59
