@@ -1,17 +1,29 @@
 import os
 from datetime import datetime
+from pathlib import Path
+from typing import List
 
 import pandas as pd
 from tqdm import tqdm
 
 
-def load_data_file(data_root, data_filename, columns):
+def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
     """
-    TODO:
-    """
-    get_datetime_from_filename(data_filename)
+    Load and filter one raw data file.
 
-    data_path = os.path.join(data_root, data_filename)
+    Parameters
+    ----------
+    data_path: Path
+        The path of the data file to load
+
+    columns: List[str]
+        A list of strings denote the headers of each column.
+
+    Returns
+    -------
+    DataFrame: The DataFrame obj that contains the data.
+    """
+
     data = pd.read_csv(data_path, sep=',', header=None)
 
     assert len(columns) == data.shape[1] - 1, f"{data_path}'s columns are unexpected"
@@ -37,26 +49,32 @@ def load_data_file(data_root, data_filename, columns):
     return data
 
 
-def merge_data_files(columns, data_root, all_in_one_file):
+def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path, min_file_size):
     """
-    TODO
+    Merge all files under one directory and save the result to the given file.
+
+    Parameters
+    ----------
+    columns: List[str]
+        A list of strings denote the headers of each column.
+
+    data_root: Path
+        The Path of the data directory
+
+    all_in_one_file: Path
+        The full path of the file to store the merged data.
     """
-    print(f"start merging data under {data_root}")
-    min_file_size = 1000
-    print(f"ignore files whose size is smaller than {min_file_size} byte.")
+    print(f"\nstart merging data under {data_root}")
     print("loading...")
     all_data = []
     small_file_count = 0
     for data_filename in tqdm(sorted(os.listdir(data_root))):
-        # print(data_filename)
         data_path = os.path.join(data_root, data_filename)
         # the file might be empty, if so, ignore it
         if os.stat(data_path).st_size <= min_file_size:
-            # print(f"{data_path}'s size is too small.'")
             small_file_count += 1
             continue
-        # print(data_path)
-        data = load_data_file(data_root, data_filename, columns)
+        data = load_data_file(data_root / data_filename, columns)
         all_data.append(data)
 
     print(f"number of too small files: {small_file_count}")
@@ -83,14 +101,44 @@ def merge_data_files(columns, data_root, all_in_one_file):
 
     all_in_one_selected = all_in_one_selected.drop_duplicates()
 
-    print(f"saving to {os.path.join(os.getcwd(), all_in_one_file)}")
+    print(f"saving to {all_in_one_file}")
     all_in_one_selected.to_csv(all_in_one_file, index=False)
 
-    return all_in_one_selected
+
+def preprocess_data(data_root: Path, overwrite: bool=False, min_file_size: int=1000) -> None:
+    '''
+    Preproess data under given directory.
+
+    Parameters:
+    ----------
+    data_root: Path
+        The root path for data
+
+    overwrite: bool, default is False
+        If True, then re-preprocess all files; Otherwise, skip the folders that have already been processed before.
+
+    min_file_size: int, default is 1000
+        Ignore files whose size is smaller than this limit. Unit is byte.
+
+    Returns:
+    --------
+    None
+    '''
+    print(f"Start preprocessing: {data_root}, overwrite: {overwrite}")
+    print(f"ignore files whose size is smaller than {min_file_size} byte.")
+
+    columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est', 'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num', 'off route', 'run_id']
+
+    for name in os.listdir(data_root):
+        full_path = data_root / name
+        if full_path.is_dir():
+            merged_file = data_root / f"{name}.csv"
+            if not merged_file.is_file() or overwrite:
+                merge_data_files(columns, full_path, merged_file, min_file_size)
+            else:
+                print(f"ignore: {full_path}")
 
 
-if __name__ == "__main__":
-    all_in_one_file = 'all_in_one.csv'
 def get_routes_from_file(data_file: Path):
     """
     Get the routes that show up in a single data file.
@@ -142,17 +190,9 @@ def data_statistic(data_root: Path):
     """
     routes_showing_up(data_root)
 
-    if not os.path.isfile(all_in_one_file):
-        columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est', 'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num', 'off route', 'run_id']
 
-        data_root = '../download_data/data'
-        # data_root = os.path.join(os.getcwd(), 'data')
-        data = merge_data_files(columns, data_root, all_in_one_file)
-    else:
-        data = pd.read_csv(all_in_one_file, sep=',')
+if __name__ == "__main__":
     data_root = Path(".") / 'data'
+    preprocess_data(data_root)
 
     data_statistic(data_root)
-    routes = list(set(data['route_id_curr'].values.tolist()))
-    routes = sorted(routes)
-    print(f"all routes: {routes}\tcount: {len(routes)}")  # 59
