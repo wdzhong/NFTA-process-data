@@ -49,6 +49,11 @@ The format of the data file is as follows,
 - [ ] Get the travel time/speed on each road segment from the GPS data
   - [ ] Get all road segments (usually between road intersections) that are traveled by at least one bus route. The bus routes can be found [here](https://metro.nfta.com/). Road segments are directional.
     - [ ] Each road segments should be marked/denoted by a series of geographical points
+    - [ ] Save road segments with information into files, e.g., `road segment ID`, `road intersection 1 ID`, `road intersection 2 ID`.
+      - [ ] We need to mark/record/store road intersections first, e.g., `road intersection ID`, `latitude`, `longitude`
+    - [ ] Create files to store the route information, including lists of `road segments ID`s in **inbound** and **outbound** directions. `json` should be a good choice.
+      - One file to contain all routes, or one seperate file for each route
+    - [ ] Show the road segments and intersections on Maps, e.g., my google maps.
     - [ ] Make use of tools like OpenStreetMap
     - [ ] Manually pick up
   - [ ] Map raw GPS data onto corresponding road segments
