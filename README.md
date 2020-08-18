@@ -6,6 +6,27 @@
 But there is route `17` in the data. The picture might be outdated.
 
 
+## Goal
+
+### First Stage
+From the collected data during **one single day** (e.g., `data/20200730.csv`), get the traffic speed (or travel time) on each road segment during each time interval, and save it into a file named `data/20200730_road.csv`. If there is no data for certain road segment during certain time interval, leave it empty. On the other hand, if there are more than one values (e.g., two or more buses traveled on the same road segment during the same time interval), then use the average.
+
+This table shows an example of the result for one day with time interval set to be 5 minutes.
+
+| Road\Time   | 00:00 - 00:05 | 00:05 - 00:10  | 00:10 - 00:15 | ... | 23:55 - 00:00 |
+| :---:       |    :----:   |     :---: | :---: | :---: | :---: |
+| Road 1      |         | 30.5       |        | ... |
+| Road 2      | 50.0      |        |    20.8   | ... | 40.3
+| Road 3      |         |   40.7     |       | ... |
+| ...         | ...        | ...         | ...    | ... | ...
+| Road N      |    20.0     |   30.6     |     | ... | 40.5
+
+
+### Final Goal
+
+Infer the missing data using data imputation methods based on all historical data.
+
+
 ## Data format
 
 The format of the data file is as follows,
