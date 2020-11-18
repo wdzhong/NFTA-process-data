@@ -97,7 +97,8 @@ def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path,
 
     all_in_one['datetime'] = all_in_one['location time'].apply(lambda x: datetime.fromtimestamp(x))
 
-    all_in_one_selected = all_in_one[['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'next_tp_est', 'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'datetime']]
+    all_in_one_selected = all_in_one[['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'next_tp_est',
+                                      'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'datetime']]
 
     all_in_one_selected = all_in_one_selected.drop_duplicates()
 
@@ -127,7 +128,9 @@ def preprocess_data(data_root: Path, overwrite: bool=False, min_file_size: int=1
     print(f"Start preprocessing: {data_root}, overwrite: {overwrite}")
     print(f"ignore files whose size is smaller than {min_file_size} byte.")
 
-    columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est', 'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num', 'off route', 'run_id']
+    columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est',
+               'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num', 'off route',
+               'run_id']
 
     for name in os.listdir(data_root):
         full_path = data_root / name
