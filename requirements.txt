@@ -1,2 +1,4 @@
-pandas>=1.0.0
-tqdm
+osmium~=3.1.0
+pandas~=1.1.4
+tqdm~=4.52.0
+folium~=0.11.0
