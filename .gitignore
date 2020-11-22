@@ -1,5 +1,4 @@
 .vscode
-/debug
 .idea/.gitignore
 .idea/NFTA-process-data.iml
 .idea/codeStyles/
@@ -7,3 +6,4 @@
 .idea/misc.xml
 .idea/modules.xml
 .idea/vcs.xml
+/debug/
