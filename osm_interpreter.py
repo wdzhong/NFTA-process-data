@@ -103,7 +103,7 @@ def debug_show_all_route(relations, final_node_table, final_way_table):
                 folium.PolyLine(points, color=line_color).add_to(m)
     # https://github.com/python-visualization/folium/issues/946
     # a way to show the map outside ipython note book
-    temp_path = "debug/map.html"
+    temp_path = "debug/map_of_all_route.html"
     m.save(temp_path)
     url_path = "file://" + os.path.abspath(temp_path)
     return url_path
@@ -213,25 +213,25 @@ def get_map_data(map_file, result_file_path, save_type):
         print("[Debug] len(final_node_table) = %d" % len(final_node_table))
         print("[Debug] len(final_way_table)= %d" % len(final_way_table))
         print("[Debug] len(final_relation_table) = %d" % len(final_relation_table))
-        print("[Debug] OSM map: ", debug_show_all_route(relations, final_node_table, final_way_table))
+        print("[Debug] Map of all route: ", debug_show_all_route(relations, final_node_table, final_way_table))
 
 
     if save_type == save_type_JSON:
         temp_filepath = result_file_path + "final_node_table.json"
         with open(temp_filepath, 'w') as f:
-            json.dump(final_node_table, f, sort_keys=True)
+            json.dump(final_node_table, f)
             print("%s saved" % temp_filepath)
         temp_filepath = result_file_path + "final_way_table.json"
         with open(temp_filepath, 'w') as f:
-            json.dump(final_way_table, f, sort_keys=True)
+            json.dump(final_way_table, f)
             print("%s saved" % temp_filepath)
         temp_filepath = result_file_path + "final_relation_table.json"
         with open(temp_filepath, 'w') as f:
-            json.dump(final_relation_table, f, sort_keys=True)
+            json.dump(final_relation_table, f)
             print("%s saved" % temp_filepath)
         temp_filepath = result_file_path + "relations.json"
         with open(temp_filepath, 'w') as f:
-            json.dump(relations, f, sort_keys=True)
+            json.dump(relations, f)
             print("%s saved" % temp_filepath)
 
     elif save_type == save_type_pickle:
@@ -270,16 +270,15 @@ if __name__ == '__main__':
         print("Optional:")
         print("Result path: the path to the folder that store the result files")
         print("             by default is: graph/")
-        print("Save format: the format to save the result, by default is JSON")
+        print("Save format: the format to save the result, by default is pickle")
         print("             possible value: JSON and pickle")
         exit(0)
 
-    # Initialize the
     map_file = sys.argv[1]
     result_file_path = "graph/"
     if len(sys.argv) >= 3:
         result_file_path = sys.argv[2]
-    save_type = save_type_JSON
+    save_type = save_type_pickle
     if len(sys.argv) >= 4:
         if sys.argv[3] == "JSON":
             save_type = save_type_JSON
@@ -287,16 +286,16 @@ if __name__ == '__main__':
             save_type = save_type_pickle
         else:
             print("invalid Save format")
-            print("Save format: the format to save the result, by default is JSON")
+            print("Save format: the format to save the result, by default is pickle")
             print("             possible value: JSON and pickle")
             exit(0)
 
     print("Map File   : %s" % map_file)
     print("Result path: %s" % result_file_path)
-    if save_type == save_type_JSON:
-        print("Result type: JSON")
-    elif save_type == save_type_pickle:
+    if save_type == save_type_pickle:
         print("Result type: pickle")
+    elif save_type == save_type_JSON:
+        print("Result type: JSON")
 
     start = time.process_time()
     get_map_data(map_file, result_file_path, save_type)
