@@ -5,13 +5,13 @@ import sys
 import json
 import math
 
-flag_debug = True
+flag_debug = False
 
 
-# haversine formula for more precise distance calculation
 def distance(point1, point2):
     """
     Get the distance between two point in km (kilometers)
+    haversine formula for more precise distance calculation
 
     Parameters
     ----------
@@ -43,12 +43,28 @@ def distance(point1, point2):
     return result
 
 
-def get_close_road(final_node_table, final_way_table, datapoint, margin=0.006):
+def get_close_road(final_node_table, final_way_table, final_relation_table, relation_ids, datapoint, margin=0.006):
     """
     Get the closest road for given datapoint
 
     Parameters
     ----------
+    final_node_table: Dict
+        A dictionary that stored the node id and the latitude/longitude coordinates as a key value pair.
+
+    final_way_table: Dict
+        A dictionary that stored the way id and a list of node id's as a key value pair.
+
+    final_relation_table:
+        final_relation_table is a dictionary that stored the relation id and a tuple that had a list of nodes and ways
+        and a list of tags. The list of nodes and ways were the stops and streets that made up a specific NFTA route.
+        Nodes are usually included because the routes start and end at points that are generally not the natural
+        endpoint of a road. The tags are useful because they possess information on the route like its name and what
+        type of vehicle traverse the route (e.g. bus).
+
+    relation_ids: Set of int
+        List of int that represent the index of relation
+
     datapoint: List of int
         Longitude and Latitude of the given point
 
@@ -58,51 +74,82 @@ def get_close_road(final_node_table, final_way_table, datapoint, margin=0.006):
 
     Returns
     -------
+    min_projection: List of int
+        The lat and lng of the projection point from given point to the nearest road
+
     way: int
         The id of the way that closest to the given point
+    """
 
     """
-    proximal_nodes = {}
+    This part works, but I switched to a different approach because this code was quite slow.
+    It finds all nodes and ways within 0.006 degreees of a datapoint.
+    However, this is too slow and I opted to only search for nodes and ways given a specific route.
+    """
+    # proximal_nodes = {}
+    #
+    # # adds all nodes within margin(0.006) degrees of the datapoint
+    # for key, value in final_node_table.items():
+    #     if datapoint[0] + margin > value[0] > datapoint[0] - margin:
+    #         if datapoint[1] + margin > value[1] > datapoint[1] - margin:
+    #             proximal_nodes.update({key: value})
+    #
+    # if flag_debug:
+    #     print("[Debug] len(proximal_nodes) = %d" % len(proximal_nodes))
+    #     m = folium.Map(location=datapoint, tiles="OpenStreetMap", zoom_start=18)
+    #     folium.Marker(datapoint, popup='datapoint').add_to(m)
+    #     for key, value in proximal_nodes.items():
+    #         folium.Marker(value).add_to(m)
+    #     temp_path = "debug/map_of_nearby_nodes.html"
+    #     m.save(temp_path)
+    #     url_path = "file://" + os.path.abspath(temp_path)
+    #     print("[Debug] Map of all nearby nodes: ", url_path)
+    #
+    # # Finds the ways that have nodes within margin(0.006) degrees of the datapoint
+    # proximal_ways = {}
+    # # proximal_nodes_key_set = set(proximal_nodes.keys())
+    # for key, value in final_way_table.items():
+    #     for node in value:
+    #         if node in proximal_nodes:
+    #             proximal_ways.update({key: value})
+    #             break
+    #
+    # if flag_debug:
+    #     print("[Debug] len(proximal_ways) = %d" % len(proximal_ways))
+    #     m = folium.Map(location=datapoint, tiles="OpenStreetMap", zoom_start=18)
+    #     folium.Marker(datapoint, popup='datapoint').add_to(m)
+    #     for key, value in proximal_ways.items():
+    #         points = []
+    #         for node in value:
+    #             points.append(final_node_table[node])
+    #         folium.PolyLine(points).add_to(m)
+    #     temp_path = "debug/map_of_nearby_way.html"
+    #     m.save(temp_path)
+    #     url_path = "file://" + os.path.abspath(temp_path)
+    #     print("[Debug] Map of all nearby road(way): ", url_path)
+    '''
+    A much faster implementation.
+    Given the route number, which is provided by the data,
+    I can narrow roads to search to those that are in a specific bus route.
+    So, this function finds the corresponding relation and searches its
+    roads for the nearest one to the datapoint.
+    '''
+    relations = []
+    for id in relation_ids:
+        relations.append(final_relation_table[id])
 
-    # adds all nodes within margin(0.006) degrees of the datapoint
-    for key, value in final_node_table.items():
-        if datapoint[0] + margin > value[0] > datapoint[0] - margin:
-            if datapoint[1] + margin > value[1] > datapoint[1] - margin:
-                proximal_nodes.update({key: value})
+    possible_ways = {}
+    possible_nodes = {}
+    for relation in relations:
+        for way in relation[0]:
+            if way in final_way_table:
+                possible_ways.update({way: final_way_table[way]})
+            else:
+                possible_nodes.update({way: final_node_table[way]})
 
-    if flag_debug:
-        print("[Debug] len(proximal_nodes) = %d" % len(proximal_nodes))
-        m = folium.Map(location=datapoint, tiles="OpenStreetMap", zoom_start=18)
-        folium.Marker(datapoint, popup='datapoint').add_to(m)
-        for key, value in proximal_nodes.items():
-            folium.Marker(value).add_to(m)
-        temp_path = "debug/map_of_nearby_nodes.html"
-        m.save(temp_path)
-        url_path = "file://" + os.path.abspath(temp_path)
-        print("[Debug] Map of all nearby nodes: ", url_path)
-
-    # Finds the ways that have nodes within margin(0.006) degrees of the datapoint
-    proximal_ways = {}
-    # proximal_nodes_key_set = set(proximal_nodes.keys())
-    for key, value in final_way_table.items():
+    for key,value in possible_ways.items():
         for node in value:
-            if node in proximal_nodes:
-                proximal_ways.update({key: value})
-                break
-
-    if flag_debug:
-        print("[Debug] len(proximal_ways) = %d" % len(proximal_ways))
-        m = folium.Map(location=datapoint, tiles="OpenStreetMap", zoom_start=18)
-        folium.Marker(datapoint, popup='datapoint').add_to(m)
-        for key, value in proximal_ways.items():
-            points = []
-            for node in value:
-                points.append(final_node_table[node])
-            folium.PolyLine(points).add_to(m)
-        temp_path = "debug/map_of_nearby_way.html"
-        m.save(temp_path)
-        url_path = "file://" + os.path.abspath(temp_path)
-        print("[Debug] Map of all nearby road(way): ", url_path)
+            possible_nodes.update({node:final_node_table[node]})
 
     min_dist = math.inf
     min_way = -1
@@ -112,7 +159,7 @@ def get_close_road(final_node_table, final_way_table, datapoint, margin=0.006):
     # The minimum distance using haversine formula determines which point I calculate is closest
     # to the datapoint. If the projection is off the road (the road stops before the vector), it
     # will not be considered. Instead, the distance of the end of the road will be used.
-    for key, value in proximal_ways.items():
+    for key, value in possible_ways.items():
         for i in range(len(value) - 1):
             a = final_node_table[value[i]]
             b = final_node_table[value[i + 1]]
@@ -152,7 +199,7 @@ def get_close_road(final_node_table, final_way_table, datapoint, margin=0.006):
         folium.Marker(datapoint, popup='datapoint', icon=folium.Icon(color='green')).add_to(m)
         folium.Marker(min_projection, popup='projection', icon=folium.Icon(color='red', icon_color='#FFFF00')).add_to(m)
         tamp_way = []
-        for node in proximal_ways[min_way]:
+        for node in possible_ways[min_way]:
             # print(distance(final_node_table[node],point1))
             folium.Marker(location=final_node_table[node]).add_to(m)
             tamp_way.append(final_node_table[node])
@@ -163,7 +210,7 @@ def get_close_road(final_node_table, final_way_table, datapoint, margin=0.006):
         url_path = "file://" + os.path.abspath(temp_path)
         print("[Debug] Map of nearest_road: ", url_path)
 
-    return min_way
+    return min_projection, min_way
 
 
 save_type_JSON = 1
@@ -172,7 +219,7 @@ save_type_pickle = 2
 if __name__ == '__main__':
     if len(sys.argv) < 3:
         print("Usage:")
-        print("find_traffic_speed.py <Longitude> <Latitude> <osm_interpreter path> <osm_interpreter format>")
+        print("find_nearest_road.py <Longitude> <Latitude> <osm_interpreter path> <osm_interpreter format>")
         print("")
         print("Require:")
         print("Longitude  : the longitude of the given points")
@@ -195,13 +242,13 @@ if __name__ == '__main__':
 
     result_file_path = "graph/"
     if len(sys.argv) >= 4:
-        result_file_path = sys.argv[1]
+        result_file_path = sys.argv[3]
 
     save_type = save_type_pickle
     if len(sys.argv) >= 5:
-        if sys.argv[2] == "JSON":
+        if sys.argv[4] == "JSON":
             save_type = save_type_JSON
-        elif sys.argv[2] == "pickle":
+        elif sys.argv[4] == "pickle":
             save_type = save_type_pickle
         else:
             print("invalid Save format")
@@ -225,10 +272,10 @@ if __name__ == '__main__':
         with open(temp_filepath, 'r') as f:
             final_way_table = json.load(f)
             print("%s loaded" % temp_filepath)
-        # temp_filepath = result_file_path + "final_relation_table.json"
-        # with open(temp_filepath, 'r') as f:
-        #     final_relation_table = json.load(f)
-        #     print("%s loaded" % temp_filepath)
+        temp_filepath = result_file_path + "final_relation_table.json"
+        with open(temp_filepath, 'r') as f:
+            final_relation_table = json.load(f)
+            print("%s loaded" % temp_filepath)
         # temp_filepath = result_file_path + "relations.json"
         # with open(temp_filepath, 'r') as f:
         #     relations = json.load(f)
@@ -243,13 +290,13 @@ if __name__ == '__main__':
         with open(temp_filepath, 'rb') as f:
             final_way_table = pickle.load(f)
             print("%s loaded" % temp_filepath)
-        # temp_filepath = result_file_path + "final_relation_table.p"
-        # with open(temp_filepath, 'rb') as f:
-        #     final_relation_table = pickle.load(f)
-        #     print("%s loaded" % temp_filepath)
+        temp_filepath = result_file_path + "final_relation_table.p"
+        with open(temp_filepath, 'rb') as f:
+            final_relation_table = pickle.load(f)
+            print("%s loaded" % temp_filepath)
         # temp_filepath = result_file_path + "relations.p"
         # with open(temp_filepath, 'rb') as f:
         #     relations = pickle.load(f)
         #     print("%s loaded" % temp_filepath)
-
-    get_close_road(final_node_table, final_way_table, datapoint)
+    #9345830 is 35A
+    get_close_road(final_node_table, final_way_table, final_relation_table, [9345830], datapoint)

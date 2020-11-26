@@ -3,7 +3,7 @@
 
 [![All Routes](images/all_routes.jpg)](http://metro.nfta.com/)
 
-But there is route `17` in the data. The picture might be outdated.
+But there is route `17` in the data. ~~The picture might be outdated.~~ Route `17` is a previously operating routes
 
 
 ## Goal
@@ -60,6 +60,7 @@ The format of the data file is as follows,
     - [x] Remove the last comma
     - [x] Remove the rows that have `vehicle_id >= 8000`
       - what are these?
+      - According to [Wikipedia](https://en.wikipedia.org/wiki/NFTA_fleet#Buses) they are vehicle purchase during 1993 - 1996
     - [x] Remove the rows that have `route_id_curr == 0`
         - what are these?
     - [x] Remove the rows that have `route_id_curr > 111`
@@ -101,7 +102,7 @@ final_node_table was a dictionary that stored the node id and the latitude/longi
 
 2. final_way_table
 
-final_way_table was a dictionary that stored the way id and a list of node id's as a key value pair.
+final_way_table was a dictionary that stored```` the way id and a list of node id's as a key value pair.
 
 3. final_relation_table
 
