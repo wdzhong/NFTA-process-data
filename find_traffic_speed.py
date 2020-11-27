@@ -1,11 +1,12 @@
 import csv
 import pickle
+import time
 import math
 import os
 import sys
 import json
 import re
-from find_nearest_road import get_close_road, distance
+from find_nearest_road import find_nearest_road, distance
 
 save_type_JSON = 1
 save_type_pickle = 2
@@ -62,7 +63,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
 
     bus_route_to_relation_index = {}
     for relation_index, relation_detail in final_relation_table.items():
-        re_result = re.match("[0-9]+", relation_detail[1]['ref'])
+        re_result = re.match(r"[0-9]+", relation_detail[1]['ref'])
         if re_result is None:
             continue
         temp_route = int(re_result.group())
@@ -70,7 +71,10 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
             bus_route_to_relation_index[temp_route] = set()
         bus_route_to_relation_index[temp_route].add(relation_index)
 
+    debug_prof_count = [0, 0, 0]
     for filename in os.listdir(data_directory):
+        start_time = time.time()
+
         procressed_lines_data = []
         with open(data_directory+filename, "r", newline='') as csv_file:
             reader_csv_file = csv.reader(csv_file)
@@ -135,7 +139,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
                 for key, speed_samples in final_relation_table.items():
                     if str(route_id1) in speed_samples[1]['ref']:
                         possible_relations1.add(key)
-            projection1, way1 = get_close_road(final_node_table, final_way_table, final_relation_table,
+            projection1, way1 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
                                                possible_relations1, [lat1, lng1])
 
             possible_relations2 = set()
@@ -145,7 +149,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
                 for key, speed_samples in final_relation_table.items():
                     if str(route_id2) in speed_samples[1]['ref']:
                         possible_relations2.add(key)
-            projection2, way2 = get_close_road(final_node_table, final_way_table, final_relation_table,
+            projection2, way2 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
                                                possible_relations2, [lat2, lng2])
 
             # print('{}:{}'.format(way,projection))
@@ -211,7 +215,15 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
             folium.Marker([lat2,lng2],icon=folium.Icon(color='red', icon_color='#FFFF00')).add_to(m)
             break
             '''
-        print(filename)
+        end_time = time.time()
+        print("%s done, %d lines, %.3fs, %.3fs/100lines" % (
+            filename, len(procressed_lines_data), end_time - start_time, (end_time - start_time) / len(procressed_lines_data) * 100))
+        debug_prof_count[0] += len(procressed_lines_data)
+        debug_prof_count[1] += end_time - start_time
+        debug_prof_count[2] += 1
+        # print(filename)
+    print("All %d file processed, total %d lines, use %.2fs, %.4f/100lines" % (
+        debug_prof_count[2], debug_prof_count[0], debug_prof_count[1], (debug_prof_count[1] * 100) / debug_prof_count[0]))
 
     for way, speed_samples in meta_speeds.items():
         speed_intervals = []
@@ -317,4 +329,7 @@ if __name__ == '__main__':
     data_directory = 'data/{}/sorted/'.format(date)
     output_path = "data/{}_road.csv".format(date)
 
+    start_time = time.time()
     find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path)
+    end_time = time.time()
+    print("Total time = %.3fs" % (end_time - start_time))

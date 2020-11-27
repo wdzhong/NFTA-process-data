@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -106,7 +107,7 @@ def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path,
     all_in_one_selected.to_csv(all_in_one_file, index=False)
 
 
-def preprocess_data(data_root: Path, overwrite: bool=False, min_file_size: int=1000) -> None:
+def preprocess_data(data_root: Path, overwrite: bool = False, min_file_size: int = 1000) -> None:
     '''
     Preproess data under given directory.
 
@@ -173,9 +174,12 @@ def routes_showing_up(data_root: Path):
     routes = set()
     for name in os.listdir(data_root):
         full_name = data_root / name
-        if full_name.is_file() and name.endswith(".csv"):
-            cur_routes = get_routes_from_file(full_name)
-            routes = routes.union(cur_routes)
+        re_result = re.match(r"data\\[0-9]{8}\.csv", str(full_name))
+        if re_result is None:
+            print("Skip file", full_name)
+            continue
+        cur_routes = get_routes_from_file(full_name)
+        routes = routes.union(cur_routes)
 
     routes = list(routes)
     routes.sort()
@@ -197,5 +201,4 @@ def data_statistic(data_root: Path):
 if __name__ == "__main__":
     data_root = Path(".") / 'data'
     preprocess_data(data_root)
-
     data_statistic(data_root)
