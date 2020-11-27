@@ -104,7 +104,7 @@ def distance_old(point1, point2):
     return result
 
 
-def find_nearest_road(final_node_table, final_way_table, final_relation_table, relation_ids, datapoint, margin=0.006):
+def find_nearest_road(final_node_table, final_way_table, final_relation_table, relation_ids, datapoint, margin=0.01):
     """
     Get the closest road for given datapoint
 
@@ -130,8 +130,8 @@ def find_nearest_road(final_node_table, final_way_table, final_relation_table, r
         Longitude and Latitude of the given point
 
     margin：float
-        the range of the nodes we will get (in degree), by default is 0.006
-        Experimentally determined a +- value of .006 just by looking at the largest space between nodes
+        the range of the nodes we will get (in degree), by default is 0.01
+        Experimentally determined a +- value of .001 just by looking at the largest space between nodes
 
     Returns
     -------
@@ -153,13 +153,26 @@ def find_nearest_road(final_node_table, final_way_table, final_relation_table, r
         relations.append(final_relation_table[id])
 
     possible_ways = {}
-    possible_nodes = {}
+    # possible_nodes = {}  # never use
     for relation in relations:
         for way in relation[0]:
             if way in final_way_table:
-                possible_ways.update({way: final_way_table[way]})
-            # else:
-            #     possible_nodes.update({way: final_node_table[way]})
+                temp_flag_near = False
+                for node in final_way_table[way]:
+                    if datapoint[0] + margin > final_node_table[node][0] > datapoint[0] - margin:
+                        if datapoint[1] + margin > final_node_table[node][1] > datapoint[1] - margin:
+                            temp_flag_near = True
+                            break
+                if temp_flag_near:
+                    possible_ways.update({way: final_way_table[way]})
+
+    # For some unknown reason, in some case the bus is not close to any way in the route,
+    # in that case we just put all way in it.
+    if len(possible_ways) == 0:
+        for relation in relations:
+            for way in relation[0]:
+                if way in final_way_table:
+                    possible_ways.update({way: final_way_table[way]})
 
     # for key,value in possible_ways.items():
     #     for node in value:
@@ -182,9 +195,10 @@ def find_nearest_road(final_node_table, final_way_table, final_relation_table, r
                 min_way = key
                 min_projection = final_node_table[value[i]]
                 mid_dist_index = i
-
+    if(min_way == -1):
+        print("A")
     temp_range = range(0)
-    if len(possible_ways[min_way]) <=3:
+    if len(possible_ways[min_way]) <= 3:
         temp_range = range(len(possible_ways[min_way]) - 1)
     elif mid_dist_index == 0:
         temp_range = range(0, 2)
