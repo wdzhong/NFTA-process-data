@@ -41,11 +41,11 @@ class OSMHandler(osm.SimpleHandler):
         info = {}
         waypoints = []
         for tag in w.tags:
-            info.update({(tag.k,tag.v)})
+            info.update({(tag.k, tag.v)})
         for node in w.nodes:
             waypoints.append(node.ref)
-        self.ways.append([w.id, waypoints,  info])
-        #print(w)
+        self.ways.append([w.id, waypoints, info])
+        # print(w)
 
     def relation(self, r):
         # self.tag_inventory(r, "relation")
@@ -54,11 +54,11 @@ class OSMHandler(osm.SimpleHandler):
                 info = {}
                 waypoints = []
                 for tag in r.tags:
-                    info.update({(tag.k,tag.v)})
+                    info.update({(tag.k, tag.v)})
                 for node in r.members:
                     waypoints.append(node.ref)
-                    #waypoints.append(node)
-                    #print('{},{},{}'.format(node.ref, node.role, node.type))
+                    # waypoints.append(node)
+                    # print('{},{},{}'.format(node.ref, node.role, node.type))
                 self.relations.append([r.id, waypoints, info])
                 # print(r.tags['name'])
 
@@ -90,7 +90,7 @@ def debug_show_all_route(relations, final_node_table, final_way_table):
 
     print("[Debug] All route:")
     for relation in relations:
-        line_color = '#{}'.format(hex(random.randint(0,16777215))[2:])
+        line_color = '#{}'.format(hex(random.randint(0, 16777215))[2:])
         print("[Debug] - %s" % relation[2]['name'])
         for index in relation[1]:
             points = []
@@ -163,13 +163,13 @@ def get_map_data(map_file, result_file_path, save_type):
     for node in osmhandler.nodes:
         latitudes.append(node[2].lat)
         longitudes.append(node[2].lon)
-        node_table.update({node[1]:[node[2].lat,node[2].lon]})
+        node_table.update({node[1]: [node[2].lat, node[2].lon]})
     if flag_debug:
         print("[Debug] len(latitudes) = %d" % len(latitudes))
 
     for way in osmhandler.ways:
         ways.append(way)
-        way_table.update({way[0]:way[1]})
+        way_table.update({way[0]: way[1]})
     if flag_debug:
         print("[Debug] len(ways) = %d" % len(ways))
 
@@ -184,13 +184,13 @@ def get_map_data(map_file, result_file_path, save_type):
         for index in relation[1]:
             if index in way_table:
                 used_ways.add(index)
-                #print(index)
+                # print(index)
                 for waypoint in way_table[index]:
                     used_nodes.add(waypoint)
-                    #print('({},{})'.format(node_table[waypoint][0],node_table[waypoint][1]))
+                    # print('({},{})'.format(node_table[waypoint][0],node_table[waypoint][1]))
             elif index in node_table:
                 used_nodes.add(index)
-                #print('({},{})'.format(node_table[index][0], node_table[index][1]))
+                # print('({},{})'.format(node_table[index][0], node_table[index][1]))
     if flag_debug:
         print("[Debug] len(used_nodes) = %d" % len(used_nodes))
         print("[Debug] len(used_nodes) = %d" % len(used_ways))
@@ -198,13 +198,13 @@ def get_map_data(map_file, result_file_path, save_type):
     # Saves the final important nodes, ways, and relations to a format that is
     # more practical for my purposes: the dictionary.
 
-    for key,value in node_table.items():
+    for key, value in node_table.items():
         if key in used_nodes:
-            final_node_table.update({key:value})
+            final_node_table.update({key: value})
 
-    for key,value in way_table.items():
+    for key, value in way_table.items():
         if key in used_ways:
-            final_way_table.update({key:value})
+            final_way_table.update({key: value})
 
     for relation in relations:
         final_relation_table.update({relation[0]: [relation[1], relation[2]]})
@@ -214,7 +214,6 @@ def get_map_data(map_file, result_file_path, save_type):
         print("[Debug] len(final_way_table)= %d" % len(final_way_table))
         print("[Debug] len(final_relation_table) = %d" % len(final_relation_table))
         print("[Debug] Map of all route: ", debug_show_all_route(relations, final_node_table, final_way_table))
-
 
     if save_type == save_type_JSON:
         temp_filepath = result_file_path + "final_node_table.json"
@@ -258,7 +257,6 @@ def get_map_data(map_file, result_file_path, save_type):
 save_type_JSON = 1
 save_type_pickle = 2
 
-
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage:")
@@ -300,7 +298,7 @@ if __name__ == '__main__':
     start = time.process_time()
     get_map_data(map_file, result_file_path, save_type)
     if flag_debug:
-        print("[Debug] Total runtime is %.3f s" % ((time.process_time() - start)) )
+        print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))
     print("Done")
 
     # exit(0) ## this doesn't work, so I change it to kill

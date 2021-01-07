@@ -1,8 +1,7 @@
 import csv
 import os
-from pathlib import Path
-
 import sys
+from pathlib import Path
 
 
 def reformat_by_bus(date):
@@ -26,7 +25,7 @@ def reformat_by_bus(date):
     with open('data/{}.csv'.format(date), "r", newline='') as csv_file:
         reader_csv_file = csv.reader(csv_file)
 
-        for row in csv_writers:
+        for row in reader_csv_file:
             bus_id = row[0]
 
             if bus_id not in output:
@@ -59,17 +58,15 @@ def sort_reformat_data(date):
 
     for filename in os.listdir(unsorted_dir):
         data = []
-        with open('{}{}'.format(unsorted_dir,filename), "r", newline='') as csv_file:
+        with open('{}{}'.format(unsorted_dir, filename), "r", newline='') as csv_file:
             unsort_csv_file = csv.reader(csv_file)
             data = list(unsort_csv_file)
             data = sorted(data, key=lambda x: x[9])
-        with open('{}{}'.format(sorted_dir,filename), 'w+', newline='') as csv_file:
+        with open('{}{}'.format(sorted_dir, filename), 'w+', newline='') as csv_file:
             sorted_csv_file = csv.writer(csv_file)
             for i in data:
                 sorted_csv_file.writerow(i)
     return 0
-
-
 
 
 if __name__ == '__main__':

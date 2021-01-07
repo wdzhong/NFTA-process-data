@@ -57,7 +57,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         for i in range(288):
             row.append([])
         meta_speeds.update({key: row})
-        road_speeds.update({key: [0]*288})
+        road_speeds.update({key: [0] * 288})
 
     # used_ways = set()  #declear but never used
 
@@ -76,7 +76,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         start_time = time.time()
 
         procressed_lines_data = []
-        with open(data_directory+filename, "r", newline='') as csv_file:
+        with open(data_directory + filename, "r", newline='') as csv_file:
             reader_csv_file = csv.reader(csv_file)
 
             interval1 = -1
@@ -87,7 +87,8 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
             # Takes the current data point and the next one and uses the pair
             # for each calculation of distance and speed.
             for temp_line in reader_csv_file:
-                temp_total_second = int(temp_line[10][11:13]) * 3600 + int(temp_line[10][14:16]) * 60 + int(temp_line[10][17:19])
+                temp_total_second = int(temp_line[10][11:13]) * 3600 + int(temp_line[10][14:16]) * 60 + \
+                                    int(temp_line[10][17:19])
                 temp_data = [int(temp_line[1]),  # route_id
                              float(temp_line[7]),  # lat
                              float(temp_line[8]),  # lng
@@ -140,7 +141,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
                     if str(route_id1) in speed_samples[1]['ref']:
                         possible_relations1.add(key)
             projection1, way1 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
-                                               possible_relations1, [lat1, lng1])
+                                                  possible_relations1, [lat1, lng1])
 
             possible_relations2 = set()
             if route_id2 in bus_route_to_relation_index:
@@ -150,7 +151,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
                     if str(route_id2) in speed_samples[1]['ref']:
                         possible_relations2.add(key)
             projection2, way2 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
-                                               possible_relations2, [lat2, lng2])
+                                                  possible_relations2, [lat2, lng2])
 
             # print('{}:{}'.format(way,projection))
             # print('{}:{}'.format(way2,projection2))
@@ -181,7 +182,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
                 the average speed for each street and all the streets inbetween on the route to the same speed. The
                 method worked reasonably but route 67 (and maybe some others I didn't see) has a circular path and
                 sometimes the wrong path was taken and their speeds were set incorrectly.
-                
+
                 for relation in possible_relations:
                     if way in final_relation_table[relation][0] and way2 in final_relation_table[relation][0]:
                         indices = final_relation_table[relation][0]
@@ -203,12 +204,12 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
             '''
             print(meta_speeds[way])
             print(meta_speeds[way2])
-            
+
             for node in final_way_table[way]:
                 folium.Marker(final_node_table[node]).add_to(m)
             folium.Marker(projection).add_to(m)
             folium.Marker([lat,lng],icon=folium.Icon(color='red',icon_color='#FFFF00')).add_to(m)
-            
+
             for node in final_way_table[way2]:
                 folium.Marker(final_node_table[node]).add_to(m)
             folium.Marker(projection2).add_to(m)
@@ -217,19 +218,21 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
             '''
         end_time = time.time()
         print("%s done, %d lines, %.3fs, %.3fs/100lines" % (
-            filename, len(procressed_lines_data), end_time - start_time, (end_time - start_time) / len(procressed_lines_data) * 100))
+            filename, len(procressed_lines_data), end_time - start_time,
+            (end_time - start_time) / len(procressed_lines_data) * 100))
         debug_prof_count[0] += len(procressed_lines_data)
         debug_prof_count[1] += end_time - start_time
         debug_prof_count[2] += 1
         # print(filename)
     print("All %d file processed, total %d lines, use %.2fs, %.4f/100lines" % (
-        debug_prof_count[2], debug_prof_count[0], debug_prof_count[1], (debug_prof_count[1] * 100) / debug_prof_count[0]))
+        debug_prof_count[2], debug_prof_count[0], debug_prof_count[1],
+        (debug_prof_count[1] * 100) / debug_prof_count[0]))
 
     for way, speed_samples in meta_speeds.items():
         speed_intervals = []
         for i in range(len(speed_samples)):
             if len(speed_samples[i]) >= 1:
-                road_speeds[way][i] = sum(speed_samples[i])/len(speed_samples[i])
+                road_speeds[way][i] = sum(speed_samples[i]) / len(speed_samples[i])
 
     with open(output_path, 'w+', newline='') as output_file:
         writer = csv.writer(output_file)
@@ -237,10 +240,10 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         for h in range(24):
             for m in range(0, 60, 5):
                 if m < 55:
-                    temp_row.append("{0:0>2d}:{1:0>2d} - {0:0>2d}:{2:0>2d}".format(h, m, m+5))
+                    temp_row.append("{0:0>2d}:{1:0>2d} - {0:0>2d}:{2:0>2d}".format(h, m, m + 5))
                 else:
                     if h < 23:
-                        temp_row.append("{0:0>2d}:{1:0>2d} - {2:0>2d}:{3:0>2d}".format(h, m, h+1, 0))
+                        temp_row.append("{0:0>2d}:{1:0>2d} - {2:0>2d}:{3:0>2d}".format(h, m, h + 1, 0))
                     else:
                         temp_row.append("{0:0>2d}:{1:0>2d} - {2:0>2d}:{3:0>2d}".format(h, m, 0, 0))
         writer.writerow(temp_row)
