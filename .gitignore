@@ -7,3 +7,5 @@
 .idea/modules.xml
 .idea/vcs.xml
 .gitignore
+.ipynb_checkpoints
+.idea/

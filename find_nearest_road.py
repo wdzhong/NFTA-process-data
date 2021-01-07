@@ -8,6 +8,7 @@ import math
 
 flag_debug = False
 
+
 # def compute_poly_fit(deg, delta):
 #     x = []
 #     y = []
@@ -26,6 +27,7 @@ flag_debug = False
 #                3             2
 # y = 6.665e-09 x - 0.0001523 x + 1.237e-09 x + 1
 
+
 def distance(point1, point2):
     """
     A faster approach to compute distance, avoid using any sin and cos
@@ -38,7 +40,7 @@ def distance(point1, point2):
     point1: List of int
         Longitude and Latitude of first point
 
-    point2：List of int
+    point2: List of int
         Longitude and Latitude of first point
 
     Returns
@@ -48,7 +50,7 @@ def distance(point1, point2):
     """
     # Radius of earth at latitude 42.89 + elevation of buffalo, ny
     radius = 6368.276 + 0.183
-    cos_poly = [6.66455110e-09, -1.52313017e-04,  1.23684191e-09,  1.00000000e+00]
+    cos_poly = [6.66455110e-09, -1.52313017e-04, 1.23684191e-09, 1.00000000e+00]
 
     lat1, lng1 = point1
     lat2, lng2 = point2
@@ -69,6 +71,7 @@ def distance(point1, point2):
 
     return result
 
+
 def distance_old(point1, point2):
     """
     Get the distance between two point in km (kilometers)
@@ -79,7 +82,7 @@ def distance_old(point1, point2):
     point1: List of int
         Longitude and Latitude of first point
 
-    point2：List of int
+    point2: List of int
         Longitude and Latitude of first point
 
     Returns
@@ -129,7 +132,7 @@ def find_nearest_road(final_node_table, final_way_table, final_relation_table, r
     datapoint: List of int
         Longitude and Latitude of the given point
 
-    margin：float
+    margin: float
         the range of the nodes we will get (in degree), by default is 0.01
         Experimentally determined a +- value of .001 just by looking at the largest space between nodes
 
@@ -195,17 +198,17 @@ def find_nearest_road(final_node_table, final_way_table, final_relation_table, r
                 min_way = key
                 min_projection = final_node_table[value[i]]
                 mid_dist_index = i
-    if(min_way == -1):
-        print("A")
-    temp_range = range(0)
+    if min_way == -1:
+        print("projection is off the road?")
+
     if len(possible_ways[min_way]) <= 3:
         temp_range = range(len(possible_ways[min_way]) - 1)
     elif mid_dist_index == 0:
         temp_range = range(0, 2)
     elif mid_dist_index >= len(possible_ways[min_way]) - 2:
-        temp_range = range(len(possible_ways[min_way]) - 2, len(possible_ways[min_way])-1)
+        temp_range = range(len(possible_ways[min_way]) - 2, len(possible_ways[min_way]) - 1)
     else:
-        temp_range = range(mid_dist_index-1, mid_dist_index+2)
+        temp_range = range(mid_dist_index - 1, mid_dist_index + 2)
 
     for i in temp_range:
         a = final_node_table[possible_ways[min_way][i]]
@@ -273,7 +276,7 @@ if __name__ == '__main__':
     datapoint[0] = float(sys.argv[1])
     datapoint[1] = float(sys.argv[2])
 
-    if(datapoint[0] > 90 or datapoint[0] < -90 or datapoint[1] > 180 or datapoint[1] < -180):
+    if datapoint[0] > 90 or datapoint[0] < -90 or datapoint[1] > 180 or datapoint[1] < -180:
         print("Invalid Latitude and/or Longitude")
         exit(0)
 
@@ -335,5 +338,5 @@ if __name__ == '__main__':
         # with open(temp_filepath, 'rb') as f:
         #     relations = pickle.load(f)
         #     print("%s loaded" % temp_filepath)
-    #9345830 is 35A
+    # 9345830 is 35A
     find_nearest_road(final_node_table, final_way_table, final_relation_table, [9345830], datapoint)
