@@ -1,1 +1,9 @@
 .vscode
+.idea/.gitignore
+.idea/NFTA-process-data.iml
+.idea/codeStyles/
+.idea/discord.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+.gitignore

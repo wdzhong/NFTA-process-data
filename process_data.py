@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -97,7 +98,8 @@ def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path,
 
     all_in_one['datetime'] = all_in_one['location time'].apply(lambda x: datetime.fromtimestamp(x))
 
-    all_in_one_selected = all_in_one[['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'next_tp_est', 'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'datetime']]
+    all_in_one_selected = all_in_one[['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'next_tp_est',
+                                      'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'datetime']]
 
     all_in_one_selected = all_in_one_selected.drop_duplicates()
 
@@ -105,7 +107,7 @@ def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path,
     all_in_one_selected.to_csv(all_in_one_file, index=False)
 
 
-def preprocess_data(data_root: Path, overwrite: bool=False, min_file_size: int=1000) -> None:
+def preprocess_data(data_root: Path, overwrite: bool = False, min_file_size: int = 1000) -> None:
     '''
     Preproess data under given directory.
 
@@ -127,7 +129,9 @@ def preprocess_data(data_root: Path, overwrite: bool=False, min_file_size: int=1
     print(f"Start preprocessing: {data_root}, overwrite: {overwrite}")
     print(f"ignore files whose size is smaller than {min_file_size} byte.")
 
-    columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est', 'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num', 'off route', 'run_id']
+    columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est',
+               'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num', 'off route',
+               'run_id']
 
     for name in os.listdir(data_root):
         full_path = data_root / name
@@ -170,9 +174,12 @@ def routes_showing_up(data_root: Path):
     routes = set()
     for name in os.listdir(data_root):
         full_name = data_root / name
-        if full_name.is_file() and name.endswith(".csv"):
-            cur_routes = get_routes_from_file(full_name)
-            routes = routes.union(cur_routes)
+        re_result = re.match(r"data\\[0-9]{8}\.csv", str(full_name))
+        if re_result is None:
+            print("Skip file", full_name)
+            continue
+        cur_routes = get_routes_from_file(full_name)
+        routes = routes.union(cur_routes)
 
     routes = list(routes)
     routes.sort()
@@ -194,5 +201,4 @@ def data_statistic(data_root: Path):
 if __name__ == "__main__":
     data_root = Path(".") / 'data'
     preprocess_data(data_root)
-
     data_statistic(data_root)
