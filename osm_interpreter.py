@@ -118,7 +118,7 @@ def get_map_data(map_file, result_file_path, save_type):
     map_file: Path
         The path of the osm file
 
-    result_file_path：Path
+    result_file_path: Path
         The path of the folder to save the result file.
 
     save_type: int
