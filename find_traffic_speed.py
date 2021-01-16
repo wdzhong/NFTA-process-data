@@ -1,15 +1,120 @@
 import csv
-import pickle
 import time
 import math
 import os
 import sys
-import json
 import re
+import folium
 from find_nearest_road import find_nearest_road, distance
+from helper.graph_reader import graph_reader
+from pathlib import Path
+from tqdm import tqdm
 
+flag_debug = True
 save_type_JSON = 1
 save_type_pickle = 2
+
+
+def debug_get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index, road_speed_time_range_end_index):
+    sample_speed = []
+    sample_time = []
+    road_speed = 0
+    i = 0
+    if road_speed_time_range_start_index < 0:
+        for index in range(len(single_road_speed)):
+            if single_road_speed[index] > 0:
+                i += 1
+                road_speed += (single_road_speed[index] - road_speed) / i
+                sample_speed.append(single_road_speed[index])
+                sample_time.append(debug_time_range_index_to_time_str(index))
+    else:
+        for index in range(road_speed_time_range_start_index, road_speed_time_range_end_index+1):
+            if single_road_speed[index] > 0:
+                i += 1
+                road_speed += (single_road_speed[index] - road_speed) / i
+                sample_speed.append(single_road_speed[index])
+                sample_time.append(debug_time_range_index_to_time_str(index))
+
+    max_speed = 0
+    min_speed = 9999
+    for i in sample_speed:
+        if i <= min_speed:
+            min_speed = i
+        if i >= max_speed:
+            max_speed = i
+
+    return road_speed, sample_speed, sample_time, max_speed, min_speed
+
+
+def debug_get_traffic_speed_color(road_speed):
+    color = ""
+
+    if road_speed >= 20:
+        color = "#84ca50"  # Green
+    elif road_speed >= 10:
+        color = "#f07d02"  # Yellow
+    elif road_speed >= 5:
+        color = "#e60000"  # Red
+    elif road_speed <= 0:
+        color = "#a9acb8"  # Gray
+    else:
+        color = "#9e1313"  # Dark Red
+
+    return color
+
+
+def debug_time_range_index_to_file_name(time_range_start_index, time_range_end_index):
+    if time_range_start_index < 0:
+        return "all day average"
+
+    return "{} - {}".format(debug_time_range_index_to_time_str(time_range_start_index, delimiter=""),
+                            debug_time_range_index_to_time_str(time_range_end_index, delimiter=""))
+
+
+def debug_time_range_index_to_time_str(time_range_index, delimiter=":"):
+    h = int(time_range_index / 12) % 24
+    m = (time_range_index % 12) * 5
+    return "{:0>2d}{}{:0>2d}".format(h, delimiter, m)
+
+
+def debug_map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_speed):
+    if road_speed != 0:
+        sample_text = ""
+        for speed, time in zip(sample_speed, sample_time):
+            sample_text = sample_text + "<td>{}</td><td>{:.2f}</td></tr><tr>".format(time, speed)
+        html = '''Avg. speed: {:.2f}<br>Max speed: {:.2f}<br>Min speed: {:.2f}<br>Detail:<table border="1"><tr>{}</tr></table>'''.format(road_speed, max_speed, min_speed, sample_text)
+    else:
+        html = "No data"
+    iframe = folium.IFrame(html,  width=500, height=600)
+    popup = folium.Popup(iframe, max_width=2650)
+    return popup
+
+
+def debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, time_range_start_index, time_range_end_index):
+
+    m = folium.Map(location=[42.89, -78.74], tiles="OpenStreetMap", zoom_start=10)
+
+    for way, single_road_speed in road_speeds.items():
+        road_speed, sample_speed, sample_time, max_speed, min_speed = debug_get_traffic_speed_data(single_road_speed, time_range_start_index, time_range_end_index)
+        line_color = debug_get_traffic_speed_color(road_speed)
+        points = []
+
+        for waypoint in final_way_table[way]:
+            points.append((final_node_table[waypoint][0], final_node_table[waypoint][1]))
+
+        if len(points) != 0:
+            folium.PolyLine(points,
+                            popup=debug_map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_speed),
+                            tooltip="Avg. speed: {:.2f}".format(road_speed), color=line_color).add_to(m)
+
+    time_range_str = debug_time_range_index_to_file_name(time_range_start_index, time_range_end_index)
+
+    # https://github.com/python-visualization/folium/issues/946
+    # a way to show the map outside ipython note book
+    temp_path = "debug/find_traffic_speed/{}.html".format(time_range_str)
+    m.save(temp_path)
+    url_path = "file://" + os.path.abspath(temp_path)
+    return url_path
 
 
 def find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path):
@@ -72,11 +177,11 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         bus_route_to_relation_index[temp_route].add(relation_index)
 
     debug_prof_count = [0, 0, 0]
-    for filename in os.listdir(data_directory):
+    for filename in tqdm(os.listdir(data_directory)):
         start_time = time.time()
 
         procressed_lines_data = []
-        with open(data_directory + filename, "r", newline='') as csv_file:
+        with open(data_directory / filename, "r", newline='') as csv_file:
             reader_csv_file = csv.reader(csv_file)
 
             interval1 = -1
@@ -217,9 +322,9 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
             break
             '''
         end_time = time.time()
-        print("%s done, %d lines, %.3fs, %.3fs/100lines" % (
-            filename, len(procressed_lines_data), end_time - start_time,
-            (end_time - start_time) / len(procressed_lines_data) * 100))
+        # print("%s done, %d lines, %.3fs, %.3fs/100lines" % (
+        #     filename, len(procressed_lines_data), end_time - start_time,
+        #     (end_time - start_time) / len(procressed_lines_data) * 100))
         debug_prof_count[0] += len(procressed_lines_data)
         debug_prof_count[1] += end_time - start_time
         debug_prof_count[2] += 1
@@ -251,6 +356,11 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         for key, value in road_speeds.items():
             writer.writerow([key] + value)
 
+    if flag_debug:
+        debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, -1, -1)
+        for i in tqdm(range(0, 288, 12)):
+            debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, i, i + 11)
+
     return road_speeds
 
 
@@ -272,9 +382,9 @@ if __name__ == '__main__':
 
     date = sys.argv[1]
 
-    result_file_path = "graph/"
+    result_file_path = Path("graph")
     if len(sys.argv) >= 3:
-        result_file_path = sys.argv[2]
+        result_file_path = Path(sys.argv[2])
 
     save_type = save_type_pickle
     if len(sys.argv) >= 4:
@@ -293,44 +403,15 @@ if __name__ == '__main__':
     elif save_type == save_type_JSON:
         print("Result type: JSON")
 
-    if save_type == save_type_JSON:
-        temp_filepath = result_file_path + "final_node_table.json"
-        with open(temp_filepath, 'r') as f:
-            final_node_table = json.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_way_table.json"
-        with open(temp_filepath, 'r') as f:
-            final_way_table = json.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_relation_table.json"
-        with open(temp_filepath, 'r') as f:
-            final_relation_table = json.load(f)
-            print("%s loaded" % temp_filepath)
-        # temp_filepath = result_file_path + "relations.json"
-        # with open(temp_filepath, 'r') as f:
-        #     relations = json.load(f)
-        #     print("%s loaded" % temp_filepath)
+    save_filename_list = ["final_node_table", "final_way_table", "final_relation_table"]
+    map_dates = graph_reader(result_file_path, save_type, save_filename_list)
 
-    elif save_type == save_type_pickle:
-        temp_filepath = result_file_path + "final_node_table.p"
-        with open(temp_filepath, 'rb') as f:
-            final_node_table = pickle.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_way_table.p"
-        with open(temp_filepath, 'rb') as f:
-            final_way_table = pickle.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_relation_table.p"
-        with open(temp_filepath, 'rb') as f:
-            final_relation_table = pickle.load(f)
-            print("%s loaded" % temp_filepath)
-        # temp_filepath = result_file_path + "relations.p"
-        # with open(temp_filepath, 'rb') as f:
-        #     relations = pickle.load(f)
-        #     print("%s loaded" % temp_filepath)
+    final_node_table = map_dates[0]
+    final_way_table = map_dates[1]
+    final_relation_table = map_dates[2]
 
-    data_directory = 'data/{}/sorted/'.format(date)
-    output_path = "data/{}_road.csv".format(date)
+    data_directory = Path('data/{}/sorted/'.format(date))
+    output_path = Path("data/{}/{}_road.csv".format(date, date))
 
     start_time = time.time()
     find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path)
