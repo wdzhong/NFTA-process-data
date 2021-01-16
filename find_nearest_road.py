@@ -1,10 +1,10 @@
-import pickle
 import folium
 import os
 import sys
-import json
 import math
 # import numpy as np
+from helper.graph_reader import graph_reader
+from pathlib import Path
 
 flag_debug = False
 
@@ -280,9 +280,9 @@ if __name__ == '__main__':
         print("Invalid Latitude and/or Longitude")
         exit(0)
 
-    result_file_path = "graph/"
+    result_file_path = Path("graph")
     if len(sys.argv) >= 4:
-        result_file_path = sys.argv[3]
+        result_file_path = Path(sys.argv[3])
 
     save_type = save_type_pickle
     if len(sys.argv) >= 5:
@@ -303,40 +303,12 @@ if __name__ == '__main__':
     elif save_type == save_type_JSON:
         print("Result type: JSON")
 
-    if save_type == save_type_JSON:
-        temp_filepath = result_file_path + "final_node_table.json"
-        with open(temp_filepath, 'r') as f:
-            final_node_table = json.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_way_table.json"
-        with open(temp_filepath, 'r') as f:
-            final_way_table = json.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_relation_table.json"
-        with open(temp_filepath, 'r') as f:
-            final_relation_table = json.load(f)
-            print("%s loaded" % temp_filepath)
-        # temp_filepath = result_file_path + "relations.json"
-        # with open(temp_filepath, 'r') as f:
-        #     relations = json.load(f)
-        #     print("%s loaded" % temp_filepath)
+    save_filename_list = ["final_node_table", "final_way_table", "final_relation_table"]
+    map_dates = graph_reader(result_file_path, save_type, save_filename_list)
 
-    elif save_type == save_type_pickle:
-        temp_filepath = result_file_path + "final_node_table.p"
-        with open(temp_filepath, 'rb') as f:
-            final_node_table = pickle.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_way_table.p"
-        with open(temp_filepath, 'rb') as f:
-            final_way_table = pickle.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_relation_table.p"
-        with open(temp_filepath, 'rb') as f:
-            final_relation_table = pickle.load(f)
-            print("%s loaded" % temp_filepath)
-        # temp_filepath = result_file_path + "relations.p"
-        # with open(temp_filepath, 'rb') as f:
-        #     relations = pickle.load(f)
-        #     print("%s loaded" % temp_filepath)
+    final_node_table = map_dates[0]
+    final_way_table = map_dates[1]
+    final_relation_table = map_dates[2]
+
     # 9345830 is 35A
     find_nearest_road(final_node_table, final_way_table, final_relation_table, [9345830], datapoint)
