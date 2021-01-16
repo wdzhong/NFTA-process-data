@@ -134,9 +134,9 @@ def preprocess_data(data_root: Path, overwrite: bool = False, min_file_size: int
                'run_id']
 
     for name in os.listdir(data_root):
-        full_path = data_root / name
+        full_path = data_root / name / "raw"
         if full_path.is_dir():
-            merged_file = data_root / f"{name}.csv"
+            merged_file = data_root / name / "{}.csv".format(name)
             if not merged_file.is_file() or overwrite:
                 merge_data_files(columns, full_path, merged_file, min_file_size)
             else:
@@ -200,5 +200,5 @@ def data_statistic(data_root: Path):
 
 if __name__ == "__main__":
     data_root = Path(".") / 'data'
-    preprocess_data(data_root)
+    preprocess_data(data_root, min_file_size=1000)
     data_statistic(data_root)
