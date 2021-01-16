@@ -1,12 +1,14 @@
-import json
 import os
-import pickle
-import folium
+import platform
 import osmium as osm
 import sys
 import time
+from helper.graph_writer import graph_writer
+from pathlib import Path
 
 flag_debug = True
+save_type_JSON = 1
+save_type_pickle = 2
 
 
 class OSMHandler(osm.SimpleHandler):
@@ -84,6 +86,7 @@ def debug_show_all_route(relations, final_node_table, final_way_table):
     -------
     An URL link to the saved map file, can be open in the browser
     """
+    import folium
     import random
 
     m = folium.Map(location=[42.89, -78.74], tiles="OpenStreetMap", zoom_start=10)
@@ -100,7 +103,7 @@ def debug_show_all_route(relations, final_node_table, final_way_table):
             elif index in final_node_table:
                 points.append((final_node_table[index][0], final_node_table[index][1]))
             if len(points) != 0:
-                folium.PolyLine(points, color=line_color).add_to(m)
+                folium.PolyLine(points, tooltip=relation[2]['name'], color=line_color).add_to(m)
     # https://github.com/python-visualization/folium/issues/946
     # a way to show the map outside ipython note book
     temp_path = "debug/map_of_all_route.html"
@@ -146,7 +149,7 @@ def get_map_data(map_file, result_file_path, save_type):
         list of 3-tuples.
     """
     osmhandler = OSMHandler()
-    osmhandler.apply_file(map_file)
+    osmhandler.apply_file(str(map_file))
 
     latitudes = []
     longitudes = []
@@ -215,47 +218,13 @@ def get_map_data(map_file, result_file_path, save_type):
         print("[Debug] len(final_relation_table) = %d" % len(final_relation_table))
         print("[Debug] Map of all route: ", debug_show_all_route(relations, final_node_table, final_way_table))
 
-    if save_type == save_type_JSON:
-        temp_filepath = result_file_path + "final_node_table.json"
-        with open(temp_filepath, 'w') as f:
-            json.dump(final_node_table, f)
-            print("%s saved" % temp_filepath)
-        temp_filepath = result_file_path + "final_way_table.json"
-        with open(temp_filepath, 'w') as f:
-            json.dump(final_way_table, f)
-            print("%s saved" % temp_filepath)
-        temp_filepath = result_file_path + "final_relation_table.json"
-        with open(temp_filepath, 'w') as f:
-            json.dump(final_relation_table, f)
-            print("%s saved" % temp_filepath)
-        temp_filepath = result_file_path + "relations.json"
-        with open(temp_filepath, 'w') as f:
-            json.dump(relations, f)
-            print("%s saved" % temp_filepath)
-
-    elif save_type == save_type_pickle:
-        temp_filepath = result_file_path + "final_node_table.p"
-        with open(temp_filepath, 'wb') as f:
-            pickle.dump(final_node_table, f)
-            print("%s saved" % temp_filepath)
-        temp_filepath = result_file_path + "final_way_table.p"
-        with open(temp_filepath, 'wb') as f:
-            pickle.dump(final_way_table, f)
-            print("%s saved" % temp_filepath)
-        temp_filepath = result_file_path + "final_relation_table.p"
-        with open(temp_filepath, 'wb') as f:
-            pickle.dump(final_relation_table, f)
-            print("%s saved" % temp_filepath)
-        temp_filepath = result_file_path + "relations.p"
-        with open(temp_filepath, 'wb') as f:
-            pickle.dump(relations, f)
-            print("%s saved" % temp_filepath)
+    # Save data to files
+    save_filename_list = ["final_node_table", "final_way_table", "final_relation_table", "relations"]
+    save_variable_list = [final_node_table, final_way_table, final_relation_table, relations]
+    graph_writer(result_file_path, save_type, save_filename_list, save_variable_list)
 
     return final_node_table, final_way_table, final_relation_table, relations
 
-
-save_type_JSON = 1
-save_type_pickle = 2
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
@@ -272,10 +241,11 @@ if __name__ == '__main__':
         print("             possible value: JSON and pickle")
         exit(0)
 
-    map_file = sys.argv[1]
-    result_file_path = "graph/"
+    map_file = Path(sys.argv[1])
+    result_file_path = Path("graph")
     if len(sys.argv) >= 3:
-        result_file_path = sys.argv[2]
+        result_file_path = Path(sys.argv[2])
+
     save_type = save_type_pickle
     if len(sys.argv) >= 4:
         if sys.argv[3] == "JSON":
@@ -301,9 +271,11 @@ if __name__ == '__main__':
         print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))
     print("Done")
 
-    # exit(0) ## this doesn't work, so I change it to kill
-    print("")
-    print("Known BUG:")
-    print("For some unknown reason, this python script cannot close correctly")
-    print("Killing the program ...")
-    os.kill(os.getpid(), 9)
+    if platform.system() != "Windows":
+        exit(0)
+    else:
+        print("")
+        print("Known BUG:")
+        print("For some unknown reason, this python script cannot close correctly on some Windows")
+        print("Killing the program ...")
+        os.kill(os.getpid(), 9)
