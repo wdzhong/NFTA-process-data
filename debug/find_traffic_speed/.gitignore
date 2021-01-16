@@ -1,5 +1,4 @@
 # Ignore everything in this directory
 *
-!find_traffic_speed/
 # Except this file
 !.gitignore
