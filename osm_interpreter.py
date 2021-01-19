@@ -5,10 +5,7 @@ import sys
 import time
 from helper.graph_writer import graph_writer
 from pathlib import Path
-
-flag_debug = True
-save_type_JSON = 1
-save_type_pickle = 2
+from helper.global_var import flag_debug, save_type_JSON, save_type_pickle
 
 
 class OSMHandler(osm.SimpleHandler):

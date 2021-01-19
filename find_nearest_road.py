@@ -2,11 +2,10 @@ import folium
 import os
 import sys
 import math
+from helper.global_var import flag_debug
 # import numpy as np
 from helper.graph_reader import graph_reader
 from pathlib import Path
-
-flag_debug = False
 
 
 # def compute_poly_fit(deg, delta):

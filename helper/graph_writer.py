@@ -1,8 +1,6 @@
 import json
 import pickle
-
-save_type_JSON = 1
-save_type_pickle = 2
+from helper.global_var import save_type_JSON, save_type_pickle
 
 
 def graph_writer(result_file_path, save_type, save_filename_list, save_variable_list):

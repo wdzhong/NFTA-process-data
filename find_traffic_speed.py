@@ -5,14 +5,11 @@ import os
 import sys
 import re
 import folium
+from helper.global_var import flag_debug, save_type_JSON, save_type_pickle
 from find_nearest_road import find_nearest_road, distance
 from helper.graph_reader import graph_reader
 from pathlib import Path
 from tqdm import tqdm
-
-flag_debug = True
-save_type_JSON = 1
-save_type_pickle = 2
 
 
 def debug_get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index, road_speed_time_range_end_index):
