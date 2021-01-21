@@ -1,12 +1,11 @@
-import pickle
 import folium
 import os
 import sys
-import json
 import math
+from helper.global_var import flag_find_nearest_road_debug
 # import numpy as np
-
-flag_debug = False
+from helper.graph_reader import graph_reader
+from pathlib import Path
 
 
 # def compute_poly_fit(deg, delta):
@@ -226,13 +225,13 @@ def find_nearest_road(final_node_table, final_way_table, final_relation_table, r
                 min(a[1], b[1]) <= projection[1] <= max(a[1], b[1]):
             temp_distance = distance(projection, c)
             if temp_distance < min_dist:
-                if flag_debug:
+                if flag_find_nearest_road_debug:
                     print("[Debug] distance(projection, c) = %d" % temp_distance)
                 min_dist = temp_distance
                 min_way = min_way
                 min_projection = projection
 
-    if flag_debug:
+    if flag_find_nearest_road_debug:
         m = folium.Map(location=datapoint, tiles="OpenStreetMap", zoom_start=18)
         folium.Marker(datapoint, popup='datapoint', icon=folium.Icon(color='green')).add_to(m)
         folium.Marker(min_projection, popup='projection', icon=folium.Icon(color='red', icon_color='#FFFF00')).add_to(m)
@@ -280,9 +279,9 @@ if __name__ == '__main__':
         print("Invalid Latitude and/or Longitude")
         exit(0)
 
-    result_file_path = "graph/"
+    result_file_path = Path("graph")
     if len(sys.argv) >= 4:
-        result_file_path = sys.argv[3]
+        result_file_path = Path(sys.argv[3])
 
     save_type = save_type_pickle
     if len(sys.argv) >= 5:
@@ -303,40 +302,12 @@ if __name__ == '__main__':
     elif save_type == save_type_JSON:
         print("Result type: JSON")
 
-    if save_type == save_type_JSON:
-        temp_filepath = result_file_path + "final_node_table.json"
-        with open(temp_filepath, 'r') as f:
-            final_node_table = json.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_way_table.json"
-        with open(temp_filepath, 'r') as f:
-            final_way_table = json.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_relation_table.json"
-        with open(temp_filepath, 'r') as f:
-            final_relation_table = json.load(f)
-            print("%s loaded" % temp_filepath)
-        # temp_filepath = result_file_path + "relations.json"
-        # with open(temp_filepath, 'r') as f:
-        #     relations = json.load(f)
-        #     print("%s loaded" % temp_filepath)
+    save_filename_list = ["final_node_table", "final_way_table", "final_relation_table"]
+    map_dates = graph_reader(result_file_path, save_type, save_filename_list)
 
-    elif save_type == save_type_pickle:
-        temp_filepath = result_file_path + "final_node_table.p"
-        with open(temp_filepath, 'rb') as f:
-            final_node_table = pickle.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_way_table.p"
-        with open(temp_filepath, 'rb') as f:
-            final_way_table = pickle.load(f)
-            print("%s loaded" % temp_filepath)
-        temp_filepath = result_file_path + "final_relation_table.p"
-        with open(temp_filepath, 'rb') as f:
-            final_relation_table = pickle.load(f)
-            print("%s loaded" % temp_filepath)
-        # temp_filepath = result_file_path + "relations.p"
-        # with open(temp_filepath, 'rb') as f:
-        #     relations = pickle.load(f)
-        #     print("%s loaded" % temp_filepath)
+    final_node_table = map_dates[0]
+    final_way_table = map_dates[1]
+    final_relation_table = map_dates[2]
+
     # 9345830 is 35A
     find_nearest_road(final_node_table, final_way_table, final_relation_table, [9345830], datapoint)

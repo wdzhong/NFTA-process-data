@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import List
-
+import helper.global_var as global_var
 import pandas as pd
 from tqdm import tqdm
 
@@ -44,9 +44,10 @@ def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
     # filter time
     # focus on time range between 6am and 9pm
     # since the traffic condition outside of this range is not that interesting
-    start_time = 6
-    end_time = 21
-    data = data[data.apply(lambda row: 6 <= datetime.fromtimestamp(row['location time']).hour <= 21, axis=1)]
+    start_time = global_var.process_data_start_time
+    end_time = global_var.process_data_end_time
+    data = data[data.apply(lambda row: start_time <= datetime.fromtimestamp(row['location time']).hour <= end_time,
+                           axis=1)]
     return data
 
 
@@ -134,9 +135,9 @@ def preprocess_data(data_root: Path, overwrite: bool = False, min_file_size: int
                'run_id']
 
     for name in os.listdir(data_root):
-        full_path = data_root / name
+        full_path = data_root / name / "raw"
         if full_path.is_dir():
-            merged_file = data_root / f"{name}.csv"
+            merged_file = data_root / name / "{}.csv".format(name)
             if not merged_file.is_file() or overwrite:
                 merge_data_files(columns, full_path, merged_file, min_file_size)
             else:
@@ -200,5 +201,5 @@ def data_statistic(data_root: Path):
 
 if __name__ == "__main__":
     data_root = Path(".") / 'data'
-    preprocess_data(data_root)
+    preprocess_data(data_root, min_file_size=1000)
     data_statistic(data_root)

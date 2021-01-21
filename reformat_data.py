@@ -22,14 +22,17 @@ def reformat_by_bus(date):
     Path('data/{}/unsorted/'.format(date)).mkdir(parents=True, exist_ok=True)
     output = {}
     csv_writers = {}
-    with open('data/{}.csv'.format(date), "r", newline='') as csv_file:
+
+    with open(Path("data/{}/{}.csv".format(date, date)), "r", newline='') as csv_file:
         reader_csv_file = csv.reader(csv_file)
 
         for row in reader_csv_file:
             bus_id = row[0]
+            if not bus_id.isdigit():
+                continue
 
             if bus_id not in output:
-                output[bus_id] = open('data/{}/unsorted/{}.csv'.format(date, bus_id), 'w+', newline='')
+                output[bus_id] = open(Path("data/{}/unsorted/{}.csv".format(date, bus_id)), 'w+', newline='')
                 csv_writers[bus_id] = csv.writer(output[bus_id])
 
             csv_writers[bus_id].writerow(row)
@@ -51,18 +54,19 @@ def sort_reformat_data(date):
     date: string
         8 digit number of the date. It should be a folder name in data
     """
-    root = 'data/{}/'.format(date)
-    unsorted_dir = root + 'unsorted/'
-    sorted_dir = root + 'sorted/'
+
+    root = Path("data/{}".format(date))
+    unsorted_dir = root / "unsorted"
+    sorted_dir = root / "sorted"
     Path(sorted_dir).mkdir(parents=True, exist_ok=True)
 
     for filename in os.listdir(unsorted_dir):
         data = []
-        with open('{}{}'.format(unsorted_dir, filename), "r", newline='') as csv_file:
+        with open(unsorted_dir / filename, "r", newline='') as csv_file:
             unsort_csv_file = csv.reader(csv_file)
             data = list(unsort_csv_file)
             data = sorted(data, key=lambda x: x[9])
-        with open('{}{}'.format(sorted_dir, filename), 'w+', newline='') as csv_file:
+        with open(sorted_dir / filename, 'w+', newline='') as csv_file:
             sorted_csv_file = csv.writer(csv_file)
             for i in data:
                 sorted_csv_file.writerow(i)
