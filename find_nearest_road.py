@@ -2,7 +2,7 @@ import folium
 import os
 import sys
 import math
-from helper.global_var import flag_debug
+from helper.global_var import flag_find_nearest_road_debug
 # import numpy as np
 from helper.graph_reader import graph_reader
 from pathlib import Path
@@ -225,13 +225,13 @@ def find_nearest_road(final_node_table, final_way_table, final_relation_table, r
                 min(a[1], b[1]) <= projection[1] <= max(a[1], b[1]):
             temp_distance = distance(projection, c)
             if temp_distance < min_dist:
-                if flag_debug:
+                if flag_find_nearest_road_debug:
                     print("[Debug] distance(projection, c) = %d" % temp_distance)
                 min_dist = temp_distance
                 min_way = min_way
                 min_projection = projection
 
-    if flag_debug:
+    if flag_find_nearest_road_debug:
         m = folium.Map(location=datapoint, tiles="OpenStreetMap", zoom_start=18)
         folium.Marker(datapoint, popup='datapoint', icon=folium.Icon(color='green')).add_to(m)
         folium.Marker(min_projection, popup='projection', icon=folium.Icon(color='red', icon_color='#FFFF00')).add_to(m)
