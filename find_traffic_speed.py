@@ -10,9 +10,11 @@ from find_nearest_road import find_nearest_road, distance
 from helper.graph_reader import graph_reader
 from pathlib import Path
 from tqdm import tqdm
+import gmplot
 
 
-def debug_get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index, road_speed_time_range_end_index):
+def debug_get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index, road_speed_time_range_end_index,
+                                 time_slot_interval):
     sample_speed = []
     sample_time = []
     road_speed = 0
@@ -23,14 +25,14 @@ def debug_get_traffic_speed_data(single_road_speed, road_speed_time_range_start_
                 i += 1
                 road_speed += (single_road_speed[index] - road_speed) / i
                 sample_speed.append(single_road_speed[index])
-                sample_time.append(debug_time_range_index_to_str(index))
+                sample_time.append(debug_time_range_index_to_str(index, time_slot_interval))
     else:
         for index in range(road_speed_time_range_start_index, road_speed_time_range_end_index+1):
             if single_road_speed[index] > 0:
                 i += 1
                 road_speed += (single_road_speed[index] - road_speed) / i
                 sample_speed.append(single_road_speed[index])
-                sample_time.append(debug_time_range_index_to_str(index))
+                sample_time.append(debug_time_range_index_to_str(index, time_slot_interval))
 
     max_speed = 0
     min_speed = 9999
@@ -57,12 +59,6 @@ def debug_get_traffic_speed_color(road_speed):
     return color
 
 
-def debug_time_range_index_to_str(time_range_index, delimiter=":"):
-    h = int(time_range_index / 12) % 24
-    m = (time_range_index % 12) * 5
-    return "{:0>2d}{}{:0>2d}".format(h, delimiter, m)
-
-
 def debug_map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_speed):
     if road_speed != 0:
         sample_text = ""
@@ -78,13 +74,14 @@ def debug_map_popup_generate(road_speed, sample_speed, sample_time, max_speed, m
 
 
 def debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, time_range_start_index,
-                             time_range_end_index):
+                             time_range_end_index, time_slot_interval):
 
     m = folium.Map(location=[42.89, -78.74], tiles="OpenStreetMap", zoom_start=10)
 
     for way, single_road_speed in road_speeds.items():
         road_speed, sample_speed, sample_time, max_speed, min_speed = \
-            debug_get_traffic_speed_data(single_road_speed, time_range_start_index, time_range_end_index)
+            debug_get_traffic_speed_data(single_road_speed, time_range_start_index, time_range_end_index,
+                                         time_slot_interval)
         line_color = debug_get_traffic_speed_color(road_speed)
         points = []
 
@@ -106,15 +103,25 @@ def debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, tim
     return url_path
 
 
-def time_range_index_to_time_range_str(time_range_start_index, time_range_end_index, delimiter=":"):
+def debug_time_range_index_to_str(time_range_index, time_slot_interval, delimiter=":", offset=0):
+    time_in_min = (time_range_index * time_slot_interval)+offset
+    h = math.floor(time_in_min / 60) % 24
+    m = math.floor(time_in_min % 60)
+    return "{:0>2d}{}{:0>2d}".format(h, delimiter, m)
+
+
+def time_range_index_to_time_range_str(time_range_start_index, time_range_end_index, time_slot_interval, delimiter=":"):
     if time_range_start_index < 0:
         return "all day average"
 
-    return "{} - {}".format(debug_time_range_index_to_str(time_range_start_index, delimiter),
-                            debug_time_range_index_to_str(time_range_end_index, delimiter))
+    return "{} - {}".format(debug_time_range_index_to_str(time_range_start_index, time_slot_interval,
+                                                          delimiter=delimiter),
+                            debug_time_range_index_to_str(time_range_end_index, time_slot_interval,
+                                                          delimiter=delimiter, offset=-1))
 
 
-def find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path):
+def find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path,
+                       time_slot_interval=5):
     """
     Get the road speed matrix
 
@@ -139,11 +146,24 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
     output_path: String
         The path of where the road speed matrix output. It should be a csv file.
 
+    time_slot_interval: Int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min
+
     Returns
     -------
     road_speeds: Map of [Int to [List of Int]]
         The lat and lng of the projection point from given point to the nearest road
     """
+    time_slot_interval = int(time_slot_interval)
+    if time_slot_interval <= 0 or time_slot_interval > 1440:
+        raise RuntimeError('interval should be between (0, 1440]')
+    if 1440 % time_slot_interval != 0:
+        raise RuntimeError('interval is not divisible by 1440')
+
+    max_index = int(1440 / time_slot_interval)
+
+
     # This data structrue will have the final result.
     # All of the keys will represent all of the ways that have a bus route go through them.
     road_speeds = {}
@@ -155,13 +175,12 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
 
     for key, speed_samples in final_way_table.items():
         row = []
-        # 24 hours * 60 min/hour / 5 min intervals = 288
-        for i in range(288):
+        for i in range(max_index):
             row.append([])
         meta_speeds.update({key: row})
-        road_speeds.update({key: [0] * 288})
+        road_speeds.update({key: [0] * max_index})
 
-    # used_ways = set()  #declear but never used
+    # used_ways = set()  #  declare but never used
 
     bus_route_to_relation_index = {}
     for relation_index, relation_detail in final_relation_table.items():
@@ -204,14 +223,14 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
             lat1 = procressed_lines_data[i][1]
             lng1 = procressed_lines_data[i][2]
             total_seconds1 = procressed_lines_data[i][3]
-            interval1 = math.floor(total_seconds1 / 300)
+            interval1 = math.floor(total_seconds1 / (time_slot_interval * 60))
 
             # line2 = lines[i + 1][:-1].split(',')
             route_id2 = procressed_lines_data[i + 1][0]
             lat2 = procressed_lines_data[i + 1][1]
             lng2 = procressed_lines_data[i + 1][2]
             total_seconds2 = procressed_lines_data[i + 1][3]
-            interval2 = math.floor(total_seconds2 / 300)
+            interval2 = math.floor(total_seconds2 / (time_slot_interval * 60))
 
             # These are all disqualifying pairs.
             if interval1 != interval2:
@@ -339,8 +358,8 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         writer = csv.writer(output_file)
         temp_row = ["Road ID"]
 
-        for i in range(288):
-            temp_row.append(time_range_index_to_time_range_str(i, i + 1))
+        for i in range(max_index):
+            temp_row.append(time_range_index_to_time_range_str(i, i + 1, time_slot_interval))
 
         writer.writerow(temp_row)
 
@@ -348,10 +367,10 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
             writer.writerow([key] + value)
 
     if flag_debug:
-        print("Generate map...")
-        debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, -1, -1)
-        for i in tqdm(range(0, 288, 12)):
-            debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, i, i + 11)
+        print("Generating map...")
+        debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, -1, -1, time_slot_interval)
+        # for i in tqdm(range(0, 288, 12)):
+        #     debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, i, i + 11)
 
     return road_speeds
 
@@ -402,10 +421,13 @@ if __name__ == '__main__':
     final_way_table = map_dates[1]
     final_relation_table = map_dates[2]
 
+    time_slot_interval = 5
     data_directory = Path('data/{}/sorted/'.format(date))
-    output_path = Path("data/{}/{}_road.csv".format(date, date))
+    Path("data/{}/result".format(date)).mkdir(parents=True, exist_ok=True)
+    output_path = Path("data/{}/result/{}_{}_min_road.csv".format(date, date, time_slot_interval))
 
     start_time = time.time()
-    find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path)
+    find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path,
+                       time_slot_interval)
     end_time = time.time()
     print("Total time = %.3fs" % (end_time - start_time))
