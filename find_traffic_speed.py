@@ -10,7 +10,6 @@ from find_nearest_road import find_nearest_road, distance
 from helper.graph_reader import graph_reader
 from pathlib import Path
 from tqdm import tqdm
-import gmplot
 
 
 def debug_get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index, road_speed_time_range_end_index,
@@ -162,7 +161,6 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         raise RuntimeError('interval is not divisible by 1440')
 
     max_index = int(1440 / time_slot_interval)
-
 
     # This data structrue will have the final result.
     # All of the keys will represent all of the ways that have a bus route go through them.
