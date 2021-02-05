@@ -83,6 +83,18 @@ if __name__ == '__main__':
         print("             it is the folder name in data/")
         exit(0)
     date = sys.argv[1]
+    print(date)
     reformat_by_bus(date)
     sort_reformat_data(date)
     print("Done")
+
+    # code for running large amount of files
+    # import re
+    # data_root = Path(".") / 'data'
+    # for name in os.listdir(data_root):
+    #     if re.match(r"^[0-9]{8}$", str(name)) is not None:
+    #         date = str(name)
+    #         print(date)
+    #         reformat_by_bus(date)
+    #         sort_reformat_data(date)
+    #         print("Done")
