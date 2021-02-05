@@ -43,8 +43,8 @@ def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
     # route 17 doesn't exist
     data = data[data.route_id_curr != 17]
 
-    data = data[data.route_id_curr <= 216]
-    # as of Feb 4, 2021 the largest route number is 111
+    data = data[data.route_id_curr <= 111]
+    # As of Feb 4, 2021 the largest route number is 111
     # But for history data, 216 is the largest route number all time
     # 216 - McKinley Mall-Gowanda (stopped May 1, 2012)
 
@@ -212,5 +212,5 @@ def data_statistic(data_root: Path):
 
 if __name__ == "__main__":
     data_root = Path(".") / 'data'
-    preprocess_data(data_root, overwrite=True, min_file_size=10)
+    preprocess_data(data_root, overwrite=False, min_file_size=10)
     data_statistic(data_root)
