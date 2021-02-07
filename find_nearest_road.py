@@ -155,30 +155,29 @@ def find_nearest_road(final_node_table, final_way_table, final_relation_table, r
         relations.append(final_relation_table[id])
 
     possible_ways = {}
-    # possible_nodes = {}  # never use
-    for relation in relations:
-        for way in relation[0]:
-            if way in final_way_table:
-                temp_flag_near = False
-                for node in final_way_table[way]:
-                    if datapoint[0] + margin > final_node_table[node][0] > datapoint[0] - margin:
-                        if datapoint[1] + margin > final_node_table[node][1] > datapoint[1] - margin:
-                            temp_flag_near = True
-                            break
-                if temp_flag_near:
-                    possible_ways.update({way: final_way_table[way]})
 
-    # For some unknown reason, in some case the bus is not close to any way in the route,
-    # in that case we just put all way in it.
-    if len(possible_ways) == 0:
+    if len(relations) > 0:
         for relation in relations:
             for way in relation[0]:
                 if way in final_way_table:
-                    possible_ways.update({way: final_way_table[way]})
+                    temp_flag_near = False
+                    for node in final_way_table[way]:
+                        if datapoint[0] + margin > final_node_table[node][0] > datapoint[0] - margin:
+                            if datapoint[1] + margin > final_node_table[node][1] > datapoint[1] - margin:
+                                temp_flag_near = True
+                                break
+                    if temp_flag_near:
+                        possible_ways.update({way: final_way_table[way]})
 
-    # for key,value in possible_ways.items():
-    #     for node in value:
-    #         possible_nodes.update({node: final_node_table[node]})
+        # For some unknown reason, in some case the bus is not close to any way in the route,
+        # in that case we just put all way in it.
+        if len(possible_ways) == 0:
+            for relation in relations:
+                for way in relation[0]:
+                    if way in final_way_table:
+                        possible_ways[way] = final_way_table[way]
+    else:
+        return [0, 0], -1
 
     min_dist = math.inf
     min_way = -1

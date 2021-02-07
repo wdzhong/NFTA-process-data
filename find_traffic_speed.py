@@ -162,6 +162,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
 
     max_index = int(1440 / time_slot_interval)
 
+
     # This data structrue will have the final result.
     # All of the keys will represent all of the ways that have a bus route go through them.
     road_speeds = {}
@@ -258,8 +259,18 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
                 for key, speed_samples in final_relation_table.items():
                     if str(route_id1) in speed_samples[1]['ref']:
                         possible_relations1.add(key)
+
+            if len(possible_relations1) <= 0:
+                if flag_debug:
+                    print("No possible_relations found in {}, line {}".format(filename, i))
+                continue
+
             projection1, way1 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
                                                   possible_relations1, [lat1, lng1])
+            if way1 < 0:
+                if flag_debug:
+                    print("Error while running find_nearest_road in {}, line {}".format(filename, i))
+                continue
 
             possible_relations2 = set()
             if route_id2 in bus_route_to_relation_index:
@@ -268,8 +279,18 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
                 for key, speed_samples in final_relation_table.items():
                     if str(route_id2) in speed_samples[1]['ref']:
                         possible_relations2.add(key)
+
+            if len(possible_relations2) <= 0:
+                if flag_debug:
+                    print("No possible_relations found in {}, line {}".format(filename, i + 1))
+                continue
+
             projection2, way2 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
                                                   possible_relations2, [lat2, lng2])
+            if way1 < 0:
+                if flag_debug:
+                    print("Error while running find_nearest_road in {}, line {}".format(filename, i+1))
+                continue
 
             # print('{}:{}'.format(way,projection))
             # print('{}:{}'.format(way2,projection2))
