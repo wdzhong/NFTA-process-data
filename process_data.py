@@ -42,6 +42,7 @@ def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
     # remove lines with route_id_curr == 17
     # route 17 doesn't exist
     data = data[data.route_id_curr != 17]
+    # route 45 91 99 are also in the raw data but not exist
 
     data = data[data.route_id_curr <= 111]
     # As of Feb 4, 2021 the largest route number is 111
@@ -75,7 +76,8 @@ def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path,
     # print("loading...")
     all_data = []
     small_file_count = 0
-    for data_filename in tqdm(sorted(os.listdir(data_root)), desc="Merging {}".format(data_root), unit="file"):
+    for data_filename in tqdm(sorted(os.listdir(data_root)), desc="Merging {}".format(data_root), unit="file",
+                              position=1):
         data_path = os.path.join(data_root, data_filename)
         # the file might be empty, if so, ignore it
         if os.stat(data_path).st_size <= min_file_size:
@@ -115,8 +117,8 @@ def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path,
 
 
 def preprocess_data(data_root: Path, overwrite: bool = False, min_file_size: int = 10) -> None:
-    '''
-    Preproess data under given directory.
+    """
+    Preprocess data under given directory.
 
     Parameters:
     ----------
@@ -132,22 +134,55 @@ def preprocess_data(data_root: Path, overwrite: bool = False, min_file_size: int
     Returns:
     --------
     None
-    '''
+    """
     print(f"Start preprocessing: {data_root}, overwrite: {overwrite}")
     print(f"ignore files whose size is smaller than {min_file_size} byte.")
+
+    # columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est',
+    #            'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num',
+    #            'off route', 'run_id']
+
+    for name in tqdm(os.listdir(data_root), unit="folder", position=0):
+        preprocess_data__one_day(data_root, name, overwrite, min_file_size)
+
+    return
+
+
+def preprocess_data__one_day(data_root: Path, date_str: str, overwrite: bool = True, min_file_size: int = 10) -> None:
+    """
+    Preprocess data under given directory (this will not search the whole directory, this will only process for assign
+    date
+
+    Parameters:
+    ----------
+    data_root: Path
+        The root path for data
+
+    date_str: str
+        8 digit number of the date (which should also be the folder name in data_root)
+
+    overwrite: bool, default is True
+        If True, then re-preprocess all files; Otherwise, skip the folders that have already been processed before.
+
+    min_file_size: int, default is 10
+        Ignore files whose size is smaller than this limit. Unit is byte.
+
+    Returns:
+    --------
+    None
+    """
 
     columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est',
                'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num', 'off route',
                'run_id']
 
-    for name in os.listdir(data_root):
-        full_path = data_root / name / "raw"
-        if full_path.is_dir():
-            merged_file = data_root / name / "{}.csv".format(name)
-            if not merged_file.is_file() or overwrite:
-                merge_data_files(columns, full_path, merged_file, min_file_size)
-            else:
-                print(f"ignore: {full_path}")
+    full_path = data_root / date_str / "raw"
+    if full_path.is_dir():
+        merged_file = data_root / date_str / "{}.csv".format(date_str)
+        if not merged_file.is_file() or overwrite:
+            merge_data_files(columns, full_path, merged_file, min_file_size)
+        else:
+            print(f"ignore: {full_path}")
 
     return
 
@@ -212,5 +247,5 @@ def data_statistic(data_root: Path):
 
 if __name__ == "__main__":
     data_root = Path(".") / 'data'
-    preprocess_data(data_root, overwrite=False, min_file_size=10)
+    preprocess_data(data_root, overwrite=True, min_file_size=10)
     data_statistic(data_root)
