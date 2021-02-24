@@ -1,5 +1,6 @@
 import csv
 import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -70,13 +71,14 @@ def sort_reformat_data(date):
             sorted_csv_file = csv.writer(csv_file)
             for i in data:
                 sorted_csv_file.writerow(i)
+    shutil.rmtree(unsorted_dir)
     return 0
 
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage:")
-        print("reformat_data.py [date]")
+        print("reformat_data.py <date>")
         print("")
         print("Require:")
         print("date       : 8 digit number of the date")
@@ -88,13 +90,13 @@ if __name__ == '__main__':
     sort_reformat_data(date)
     print("Done")
 
-    # code for running large amount of files
+    # # code for running large amount of files
     # import re
+    # from tqdm import tqdm
     # data_root = Path(".") / 'data'
-    # for name in os.listdir(data_root):
+    # for name in tqdm(os.listdir(data_root)):
     #     if re.match(r"^[0-9]{8}$", str(name)) is not None:
     #         date = str(name)
-    #         print(date)
+    #         # print(date)
     #         reformat_by_bus(date)
     #         sort_reformat_data(date)
-    #         print("Done")
