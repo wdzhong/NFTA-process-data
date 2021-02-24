@@ -1,0 +1,61 @@
+<body>
+    <h1> Python Fetch Example</h1>
+
+    <p id='embed'>To be replaced.</p>
+    <p id='clock'>Time</p>
+
+    <input id="datetime_picker" type="datetime-local" name="traffic_time" value="2017-06-01T08:30">
+    <button id="get_traffic_for_time_btn" name="get_traffic_for_time_btn" onclick="get_traffic_for_selected_time()">Get Traffic Condition</button>
+
+    <script>
+        // substitution test
+        document.getElementById('embed').innerHTML = "{{embed}}"
+
+        // fetch json
+          fetch('/test')
+              .then(function (response) {
+                  return response.json();
+              }).then(function (text) {
+                  console.log('GET response text:');
+                  console.log(text); // Print the greeting as text
+                  console.log(JSON.stringify(text))
+                  console.log('')
+              });
+
+        // fetch results
+          fetch('/getdata/10/33')
+              .then(function (response) {
+                  return response.text();
+              }).then(function (text) {
+                  console.log('GET response text:');
+                  console.log(text); // Print the greeting as text
+              });
+
+        function get_traffic_for_selected_time() {
+            console.log("Get traffic condition button clicked!");
+            console.log(document.getElementById("datetime_picker").value)
+            // fetch('/get_data_/date-time')
+            // display on google maps
+        }
+
+        function startTime() {
+            var today = new Date();
+            var h = today.getHours();
+            var m = today.getMinutes();
+            var s = today.getSeconds();
+            m = checkTime(m);
+            s = checkTime(s);
+            document.getElementById('clock').innerHTML =
+                h + ":" + m + ":" + s;
+            var t = setTimeout(startTime, 500);
+        }
+        function checkTime(i) {
+            if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+            return i;
+        }
+
+        startTime()
+
+        </script>
+
+<body>
