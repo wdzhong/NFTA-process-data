@@ -3,6 +3,10 @@ flag_debug = True
 # find_nearest_road debug will print lot more information then a general debug print. It is config by a separate flag
 flag_find_nearest_road_debug = False
 
+# Google Map API key for generate map
+# Get API key https://developers.google.com/maps/documentation/javascript/get-api-key
+google_map_api_key = ""
+
 # save_type
 save_type_JSON = 1
 save_type_pickle = 2
