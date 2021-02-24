@@ -11,6 +11,9 @@ From the collected data during **one single day** (e.g., `data/20200730.csv`), g
 
 This table shows an example of the result for one day with time interval set to be 5 minutes.
 
+
+In this project, we call this matrix "speed matrix"
+
 | Road\Time   | 00:00 - 00:04 | 00:05 - 00:09  | 00:10 - 00:14 | ... | 23:55 - 23:59 |
 | :---:       |    :----:   |     :---: | :---: | :---: | :---: |
 | Road 1      |         | 30.5       |        | ... |
