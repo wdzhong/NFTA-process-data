@@ -1,10 +1,12 @@
 import csv
 import time
-import math
 import os
 import sys
 import re
-import folium
+import math
+
+from helper.debug_show_traffic_speed_map import show_traffic_speed
+from helper.helper_time_range_index_to_str import time_range_index_to_time_range_str
 from helper.global_var import flag_debug, save_type_JSON, save_type_pickle
 from find_nearest_road import find_nearest_road, distance
 from helper.graph_reader import graph_reader
@@ -12,115 +14,8 @@ from pathlib import Path
 from tqdm import tqdm
 
 
-def debug_get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index, road_speed_time_range_end_index,
-                                 time_slot_interval):
-    sample_speed = []
-    sample_time = []
-    road_speed = 0
-    i = 0
-    if road_speed_time_range_start_index < 0:
-        for index in range(len(single_road_speed)):
-            if single_road_speed[index] > 0:
-                i += 1
-                road_speed += (single_road_speed[index] - road_speed) / i
-                sample_speed.append(single_road_speed[index])
-                sample_time.append(debug_time_range_index_to_str(index, time_slot_interval))
-    else:
-        for index in range(road_speed_time_range_start_index, road_speed_time_range_end_index+1):
-            if single_road_speed[index] > 0:
-                i += 1
-                road_speed += (single_road_speed[index] - road_speed) / i
-                sample_speed.append(single_road_speed[index])
-                sample_time.append(debug_time_range_index_to_str(index, time_slot_interval))
-
-    max_speed = 0
-    min_speed = 9999
-    for i in sample_speed:
-        if i <= min_speed:
-            min_speed = i
-        if i >= max_speed:
-            max_speed = i
-
-    return road_speed, sample_speed, sample_time, max_speed, min_speed
-
-
-def debug_get_traffic_speed_color(road_speed):
-    if road_speed >= 20:
-        color = "#84ca50"  # Green
-    elif road_speed >= 10:
-        color = "#f07d02"  # Yellow
-    elif road_speed >= 5:
-        color = "#e60000"  # Red
-    elif road_speed <= 0:
-        color = "#a9acb8"  # Gray
-    else:
-        color = "#9e1313"  # Dark Red
-    return color
-
-
-def debug_map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_speed):
-    if road_speed != 0:
-        sample_text = ""
-        for temp_speed, temp_time in zip(sample_speed, sample_time):
-            sample_text = sample_text + "<td>{}</td><td>{:.2f}</td></tr><tr>".format(temp_time, temp_speed)
-        html = '''Avg. speed: {:.2f}<br>Max speed: {:.2f}<br>Min speed: {:.2f}<br>
-        Detail:<table border="1"><tr>{}</tr></table>'''.format(road_speed, max_speed, min_speed, sample_text)
-    else:
-        html = "No data"
-    iframe = folium.IFrame(html,  width=500, height=600)
-    popup = folium.Popup(iframe, max_width=2650)
-    return popup
-
-
-def debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, time_range_start_index,
-                             time_range_end_index, time_slot_interval):
-
-    m = folium.Map(location=[42.89, -78.74], tiles="OpenStreetMap", zoom_start=10)
-
-    for way, single_road_speed in road_speeds.items():
-        road_speed, sample_speed, sample_time, max_speed, min_speed = \
-            debug_get_traffic_speed_data(single_road_speed, time_range_start_index, time_range_end_index,
-                                         time_slot_interval)
-        line_color = debug_get_traffic_speed_color(road_speed)
-        points = []
-
-        for waypoint in final_way_table[way]:
-            points.append((final_node_table[waypoint][0], final_node_table[waypoint][1]))
-
-        if len(points) != 0:
-            folium.PolyLine(points,
-                            popup=debug_map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_speed),
-                            tooltip="Avg. speed: {:.2f}".format(road_speed), color=line_color).add_to(m)
-
-    time_range_str = time_range_index_to_time_range_str(time_range_start_index, time_range_end_index, "")
-
-    # https://github.com/python-visualization/folium/issues/946
-    # a way to show the map outside ipython note book
-    temp_path = "debug/find_traffic_speed/{}.html".format(time_range_str)
-    m.save(temp_path)
-    url_path = "file://" + os.path.abspath(temp_path)
-    return url_path
-
-
-def debug_time_range_index_to_str(time_range_index, time_slot_interval, delimiter=":", offset=0):
-    time_in_min = (time_range_index * time_slot_interval)+offset
-    h = math.floor(time_in_min / 60) % 24
-    m = math.floor(time_in_min % 60)
-    return "{:0>2d}{}{:0>2d}".format(h, delimiter, m)
-
-
-def time_range_index_to_time_range_str(time_range_start_index, time_range_end_index, time_slot_interval, delimiter=":"):
-    if time_range_start_index < 0:
-        return "all day average"
-
-    return "{} - {}".format(debug_time_range_index_to_str(time_range_start_index, time_slot_interval,
-                                                          delimiter=delimiter),
-                            debug_time_range_index_to_str(time_range_end_index, time_slot_interval,
-                                                          delimiter=delimiter, offset=-1))
-
-
 def find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path,
-                       time_slot_interval=5):
+                       time_slot_interval=5, map_type="OSM"):
     """
     Get the road speed matrix
 
@@ -387,7 +282,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
 
     if flag_debug:
         print("Generating map...")
-        debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, -1, -1, time_slot_interval)
+        show_traffic_speed(final_way_table, final_node_table, road_speeds, -1, -1, time_slot_interval, map_type)
         # for i in tqdm(range(0, 288, 12)):
         #     debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, i, i + 11)
 

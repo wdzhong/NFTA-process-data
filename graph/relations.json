@@ -192,15 +192,15 @@
       51251692
     ],
     {
-      "ref": "40A",
-      "name": "NFTA 40A Buffalo-Niagara Falls via Grand Island",
-      "type": "route",
       "fixme": "Route completed, need to add stops",
-      "route": "bus",
+      "name": "NFTA 40A Buffalo-Niagara Falls via Grand Island",
       "network": "NFTA Metro",
-      "website": "http://metro.nfta.com/routes/pdfs/40.pdf",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "40A",
+      "route": "bus",
+      "type": "route",
+      "website": "http://metro.nfta.com/routes/pdfs/40.pdf"
     }
   ],
   [
@@ -273,15 +273,15 @@
       670991420
     ],
     {
-      "to": "Riverside",
-      "ref": "23A",
       "from": "Southpark",
       "name": "NFTA 23A Fillmore-Hertel (to Black Rock Riverside Transit Hub)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "23A",
+      "route": "bus",
+      "to": "Riverside",
+      "type": "route"
     }
   ],
   [
@@ -324,6 +324,7 @@
       95186203,
       97829299,
       40330074,
+      883912987,
       258031294,
       670977468,
       672181301,
@@ -357,14 +358,14 @@
       258080595
     ],
     {
-      "ref": "15A",
-      "name": "NFTA 15A Seneca",
-      "type": "route",
       "fixme": "verify route at Southgate Plaza",
-      "route": "bus",
+      "name": "NFTA 15A Seneca",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "15A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -436,59 +437,15 @@
       670991497
     ],
     {
-      "to": "Southpark",
-      "ref": "23A",
       "from": "Riverside",
       "name": "NFTA 23A Fillmore-Hertel (to Bailey & Abbott)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
-    }
-  ],
-  [
-    3517747,
-    [
-      7768180672,
-      832028257,
-      5844253030,
-      535712842,
-      7768180670,
-      832028259,
-      7768180667,
-      832028262,
-      7768216388,
-      533405713,
-      7768366087,
-      7768366089,
-      7768366091,
-      7768366093,
-      7768366097,
-      7768366104,
-      7768366110,
-      7768366136,
-      832028254,
-      832018786,
-      84921399,
-      84921386,
-      347697404,
-      236835429,
-      832048179,
-      832048178,
-      832046442
-    ],
-    {
-      "to": "University",
-      "ref": "Metro",
-      "from": "Erie Canal Harbor",
-      "name": "NFTA Metro Rail: Erie Canal Harbor \u2192 University",
-      "type": "route",
-      "route": "light_rail",
-      "colour": "#73757D",
-      "network": "NFTA",
-      "operator": "Niagara Frontier Transportation Authority",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "23A",
+      "route": "bus",
+      "to": "Southpark",
+      "type": "route"
     }
   ],
   [
@@ -563,13 +520,13 @@
       331010760
     ],
     {
-      "ref": "2B",
       "name": "NFTA 2B Clinton (inbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "2B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -637,13 +594,13 @@
       273113729
     ],
     {
-      "ref": "2B",
       "name": "NFTA 2B Clinton (outbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "2B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -687,13 +644,13 @@
       276604503
     ],
     {
-      "ref": "2A",
       "name": "NFTA 2A Clinton (outbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "2A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -744,13 +701,13 @@
       331010760
     ],
     {
-      "ref": "2A",
       "name": "NFTA 2A Clinton (inbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "2A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -817,13 +774,13 @@
       12304033
     ],
     {
-      "ref": "1B",
       "name": "NFTA 1B William (outbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "1B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -893,13 +850,13 @@
       105778698
     ],
     {
-      "ref": "1B",
       "name": "NFTA 1B William (inbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "1B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -966,14 +923,14 @@
       277117180
     ],
     {
-      "ref": "11A",
-      "name": "NFTA 11A Colvin (outbound)",
-      "type": "route",
       "fixme": "verify Franklin to Niagara (not Court)",
-      "route": "bus",
+      "name": "NFTA 11A Colvin (outbound)",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "11A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1047,13 +1004,13 @@
       670977660
     ],
     {
-      "ref": "11A",
       "name": "NFTA 11A Colvin (inbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "11A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1113,14 +1070,14 @@
       780093409
     ],
     {
-      "ref": "4B",
-      "name": "NFTA 4B Broadway (outbound)",
-      "type": "route",
       "FIXME": "verify route at Thruway Mall",
-      "route": "bus",
+      "name": "NFTA 4B Broadway (outbound)",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "4B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1181,14 +1138,14 @@
       780093409
     ],
     {
-      "ref": "4B",
-      "name": "NFTA 4B Broadway (inbound)",
-      "type": "route",
       "fixme": "verify route at Thruway Mall",
-      "route": "bus",
+      "name": "NFTA 4B Broadway (inbound)",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "4B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1229,13 +1186,13 @@
       278320246
     ],
     {
-      "ref": "4A",
       "name": "NFTA 4A Broadway (outbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "4A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1282,13 +1239,13 @@
       331010760
     ],
     {
-      "ref": "4A",
       "name": "NFTA 4A Broadway (inbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "4A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1356,6 +1313,7 @@
       672181269,
       51251690,
       670991458,
+      894723633,
       670991455,
       670354692,
       273113756,
@@ -1366,14 +1324,14 @@
       670977664
     ],
     {
-      "ref": "20A",
-      "name": "NFTA 20A Elmwood",
-      "type": "route",
       "fixme": "verify Franklin to Court (not Niagara)",
-      "route": "bus",
+      "name": "NFTA 20A Elmwood",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "20A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1437,7 +1395,6 @@
       12287176,
       12281457,
       12281461,
-      277117255,
       105645096,
       48947430,
       48400801,
@@ -1453,14 +1410,14 @@
       12284472
     ],
     {
-      "ref": "11D",
-      "name": "NFTA 11D Colvin (outbound)",
-      "type": "route",
       "fixme": "verify Franklin to Niagara (not Court)",
-      "route": "bus",
+      "name": "NFTA 11D Colvin (outbound)",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "11D",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1481,7 +1438,6 @@
       139486948,
       48947430,
       105645096,
-      277117255,
       12281461,
       12281457,
       12287176,
@@ -1547,13 +1503,13 @@
       670977660
     ],
     {
-      "ref": "11D",
       "name": "NFTA 11D Colvin (inbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "11D",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1596,13 +1552,13 @@
       670354680
     ],
     {
-      "ref": "1A",
       "name": "NFTA 1A William (outbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "1A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1649,18 +1605,20 @@
       331010760
     ],
     {
-      "ref": "1A",
       "name": "NFTA 1A William (inbound)",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "2"
+      "public_transport:version": "2",
+      "ref": "1A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
     9331940,
     [
+      879894113,
+      879894112,
       672181320,
       277113709,
       672181257,
@@ -1688,18 +1646,24 @@
       84963863,
       672424049,
       672181325,
+      879898626,
+      879898625,
       671005491,
       275390771,
       671005492,
       12288792,
       670977526,
+      883915598,
       670977499,
+      883915155,
       670977496,
       12293395,
       670977498,
       49289699,
       672127521,
+      879905679,
       649213997,
+      879907200,
       670265610,
       670991512,
       670991516,
@@ -1739,19 +1703,21 @@
       670977611
     ],
     {
-      "ref": "14A",
-      "name": "NFTA 14A Abbott",
-      "type": "route",
       "fixme": "verify route at The Shops",
-      "route": "bus",
+      "name": "NFTA 14A Abbott",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "14A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
     9331941,
     [
+      879894113,
+      879894112,
       672181320,
       277113709,
       672181257,
@@ -1770,18 +1736,24 @@
       84963863,
       672424049,
       672181325,
+      879898626,
+      879898625,
       671005491,
       275390771,
       671005492,
       12288792,
       670977526,
+      883915598,
       670977499,
+      883915155,
       670977496,
       12293395,
       670977498,
       49289699,
       672127521,
+      879905679,
       649213997,
+      879907200,
       670265610,
       670991512,
       670991516,
@@ -1815,19 +1787,21 @@
       88614627
     ],
     {
-      "ref": "14B",
-      "name": "NFTA 14B Abbott",
-      "type": "route",
       "FIXME": "verify route at McKinley Mall",
-      "route": "bus",
+      "name": "NFTA 14B Abbott",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "14B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
     9331942,
     [
+      879894113,
+      879894112,
       672181320,
       277113709,
       672181257,
@@ -1855,18 +1829,24 @@
       84963863,
       672424049,
       672181325,
+      879898626,
+      879898625,
       671005491,
       275390771,
       671005492,
       12288792,
       670977526,
+      883915598,
       670977499,
+      883915155,
       670977496,
       12293395,
       670977498,
       49289699,
       672127521,
+      879905679,
       649213997,
+      879907200,
       670265610,
       670991512,
       670991516,
@@ -1919,14 +1899,14 @@
       670977611
     ],
     {
-      "ref": "14C",
-      "name": "NFTA 14C Abbott",
-      "type": "route",
       "fixme": "verify route at McKinley Mall",
-      "route": "bus",
+      "name": "NFTA 14C Abbott",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "14C",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -1978,14 +1958,14 @@
       670977546
     ],
     {
-      "ref": "13A",
-      "name": "NFTA 13A Kensington",
-      "type": "route",
       "fixme": "verify route at ECMC",
-      "route": "bus",
+      "name": "NFTA 13A Kensington",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "13A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -2053,13 +2033,13 @@
       744925021
     ],
     {
-      "ref": "12A",
       "name": "NFTA 12A Utica",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "12A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -2116,6 +2096,8 @@
       672181271,
       84963876,
       670977529,
+      879898625,
+      879898626,
       672181325,
       672424049,
       46421471,
@@ -2150,13 +2132,13 @@
       49355001
     ],
     {
-      "ref": "8A",
       "name": "NFTA 8A Main",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "8A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -2219,6 +2201,7 @@
       672181269,
       51251690,
       670991458,
+      894723633,
       672181267,
       672195046,
       258121389,
@@ -2227,13 +2210,13 @@
       670977600
     ],
     {
-      "ref": "7A",
       "name": "NFTA 7A Baynes-Richmond",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "7A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -2284,11 +2267,15 @@
       672181257,
       277113709,
       672181320,
+      879894112,
+      879894113,
       670977613,
       670354688,
       84963863,
       672424049,
       672181325,
+      879898626,
+      879898625,
       670977529,
       84963876,
       672181271,
@@ -2315,14 +2302,14 @@
       780093409
     ],
     {
-      "ref": "6A",
-      "name": "NFTA 6A Sycamore",
-      "type": "route",
       "fixme": "verify evening route at Walden Galleria",
-      "route": "bus",
+      "name": "NFTA 6A Sycamore",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "6A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -2412,14 +2399,14 @@
       51251692
     ],
     {
-      "ref": "5A",
-      "name": "NFTA 5A Niagara-Kenmore",
-      "type": "route",
       "FIXME": "verify Franklin to Niagara (not Court)",
-      "route": "bus",
+      "name": "NFTA 5A Niagara-Kenmore",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "5A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -2472,6 +2459,7 @@
       672181269,
       51251690,
       670991458,
+      894723633,
       670991455,
       670354692,
       273113756,
@@ -2482,14 +2470,14 @@
       670977664
     ],
     {
-      "ref": "3A",
-      "name": "NFTA 3A Grant",
-      "type": "route",
       "FIXME": "verify Franklin to Court (not Niagara)",
-      "route": "bus",
+      "name": "NFTA 3A Grant",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "3A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -2541,13 +2529,13 @@
       780093409
     ],
     {
-      "ref": "22A",
       "name": "NFTA 22A Porter-Best",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "22A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -2622,13 +2610,13 @@
       622160024
     ],
     {
-      "ref": "19A",
       "name": "NFTA 19A Bailey",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "19A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -2658,18 +2646,20 @@
       670991515
     ],
     {
-      "ref": "18A",
       "name": "NFTA 18A Jefferson",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "18A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
     9332134,
     [
+      879894113,
+      879894112,
       672181320,
       277113709,
       672181257,
@@ -2697,18 +2687,24 @@
       84963863,
       672424049,
       672181325,
+      879898626,
+      879898625,
       671005491,
       275390771,
       671005492,
       12288792,
       670977526,
+      883915598,
       670977499,
+      883915155,
       670977496,
       12293395,
       670977498,
       49289699,
       672127521,
+      879905679,
       649213997,
+      879907200,
       670265610,
       670991512,
       670991516,
@@ -2821,19 +2817,21 @@
       670977611
     ],
     {
-      "ref": "16H",
-      "name": "NFTA 16H South Park",
-      "type": "route",
       "fixme": "verify route at McKinley Mall",
-      "route": "bus",
+      "name": "NFTA 16H South Park",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "16H",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
     9332135,
     [
+      879894113,
+      879894112,
       672181320,
       277113709,
       672181257,
@@ -2852,18 +2850,24 @@
       84963863,
       672424049,
       672181325,
+      879898626,
+      879898625,
       671005491,
       275390771,
       671005492,
       12288792,
       670977526,
+      883915598,
       670977499,
+      883915155,
       670977496,
       12293395,
       670977498,
       49289699,
       672127521,
+      879905679,
       649213997,
+      879907200,
       670265610,
       670991512,
       670991516,
@@ -2888,18 +2892,20 @@
       671005497
     ],
     {
-      "ref": "16A",
       "name": "NFTA 16A South Park",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "16A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
     9332136,
     [
+      879894113,
+      879894112,
       672181320,
       277113709,
       672181257,
@@ -2927,18 +2933,24 @@
       84963863,
       672424049,
       672181325,
+      879898626,
+      879898625,
       671005491,
       275390771,
       671005492,
       12288792,
       670977526,
+      883915598,
       670977499,
+      883915155,
       670977496,
       12293395,
       670977498,
       49289699,
       672127521,
+      879905679,
       649213997,
+      879907200,
       670265610,
       670991512,
       670991516,
@@ -2983,14 +2995,14 @@
       670977611
     ],
     {
-      "ref": "16B",
-      "name": "NFTA 16B South Park",
-      "type": "route",
       "fixme": "verify route at McKinley Mall",
-      "route": "bus",
+      "name": "NFTA 16B South Park",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "16B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3114,13 +3126,13 @@
       780093409
     ],
     {
-      "ref": "32A",
       "name": "NFTA 32A Amherst",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "32A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3171,13 +3183,13 @@
       671005444
     ],
     {
-      "ref": "29A",
       "name": "NFTA 29A Wohlers",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "29A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3217,13 +3229,13 @@
       780093409
     ],
     {
-      "ref": "26A",
       "name": "NFTA 26A Delavan",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "26A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3320,13 +3332,13 @@
       84346110
     ],
     {
-      "ref": "25A",
       "name": "NFTA 25A Delaware",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "25A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3369,7 +3381,11 @@
       231290322,
       231290329,
       231290319,
+      887719608,
       742822126,
+      887719853,
+      887720477,
+      887720093,
       231290320,
       670991463,
       278983998,
@@ -3460,14 +3476,14 @@
       84346110
     ],
     {
-      "ref": "25D",
-      "name": "NFTA 25D Delaware",
-      "type": "route",
       "fixme": "verify route at Mid City Plaza",
-      "route": "bus",
+      "name": "NFTA 25D Delaware",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "25D",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3488,7 +3504,11 @@
       231290322,
       231290329,
       231290319,
+      887719608,
       742822126,
+      887719853,
+      887720477,
+      887720093,
       231290320,
       670991463,
       278983998,
@@ -3579,13 +3599,13 @@
       84346110
     ],
     {
-      "ref": "25B",
       "name": "NFTA 25B Delaware",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "25B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3595,6 +3615,8 @@
       672181318,
       82249359,
       671005491,
+      879898625,
+      879898626,
       672181325,
       672424049,
       84963863,
@@ -3613,6 +3635,8 @@
       672181257,
       277113709,
       672181320,
+      879894112,
+      879894113,
       671005497,
       649213751,
       92921293,
@@ -3626,13 +3650,13 @@
       671005490
     ],
     {
-      "ref": "24A",
       "name": "NFTA 24A Genesee",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "24A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3642,6 +3666,8 @@
       672181318,
       82249359,
       671005491,
+      879898625,
+      879898626,
       672181325,
       672424049,
       84963863,
@@ -3660,6 +3686,8 @@
       672181257,
       277113709,
       672181320,
+      879894112,
+      879894113,
       671005497,
       649213751,
       92921293,
@@ -3734,13 +3762,13 @@
       28221473
     ],
     {
-      "ref": "24B",
       "name": "NFTA 24B Genesee",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "24B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3808,6 +3836,9 @@
       86758918,
       829889946,
       396886943,
+      887612582,
+      887618763,
+      887620054,
       396886944,
       44386384,
       672030013,
@@ -3830,13 +3861,13 @@
       180513254
     ],
     {
-      "ref": "35A",
       "name": "NFTA 35A Sheridan",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "35A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3896,13 +3927,13 @@
       368396993
     ],
     {
-      "ref": "34H",
       "name": "NFTA 34H Niagara Falls Boulevard",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "34H",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -3983,14 +4014,14 @@
       12305631
     ],
     {
-      "ref": "34B",
-      "name": "NFTA 34B Niagara Falls Boulevard",
-      "type": "route",
       "FIXME": "verify route at Boulevard Mall",
-      "route": "bus",
+      "name": "NFTA 34B Niagara Falls Boulevard",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "34B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4047,14 +4078,14 @@
       348711011
     ],
     {
-      "ref": "34A",
-      "name": "NFTA 34A Niagara Falls Boulevard",
-      "type": "route",
       "FIXME": "verify route at Boulevard Mall, Amherst Dev Park",
-      "route": "bus",
+      "name": "NFTA 34A Niagara Falls Boulevard",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "34A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4113,13 +4144,13 @@
       512669906
     ],
     {
-      "ref": "49B",
       "name": "NFTA 49B Millard Suburban",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "49B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4193,13 +4224,13 @@
       744925020
     ],
     {
-      "ref": "48C",
       "name": "NFTA 48C Williamsville",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "48C",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4260,13 +4291,13 @@
       744925020
     ],
     {
-      "ref": "48A",
       "name": "NFTA 48A Williamsville",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "48A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4373,13 +4404,13 @@
       744925020
     ],
     {
-      "ref": "47A",
       "name": "NFTA 47A Youngs Road",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "47A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4478,14 +4509,14 @@
       780093409
     ],
     {
-      "ref": "46B",
-      "name": "NFTA 46B Lancaster",
-      "type": "route",
       "FIXME": "verify route at Walmart, Harlequin",
-      "route": "bus",
+      "name": "NFTA 46B Lancaster",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "46B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4583,14 +4614,14 @@
       780093409
     ],
     {
-      "ref": "46A",
-      "name": "NFTA 46A Lancaster",
-      "type": "route",
       "FIXME": "verify route at Walmart",
-      "route": "bus",
+      "name": "NFTA 46A Lancaster",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "46A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4689,13 +4720,13 @@
       97858767
     ],
     {
-      "ref": "44B",
       "name": "NFTA 44B Lockport",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "44B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4771,14 +4802,14 @@
       622160024
     ],
     {
-      "ref": "44A",
-      "name": "NFTA 44A Lockport",
-      "type": "route",
       "FIXME": "how does it turn around at the north end?",
-      "route": "bus",
+      "name": "NFTA 44A Lockport",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "44A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -4899,12 +4930,16 @@
       670977498,
       12293395,
       670977496,
+      883915155,
       670977499,
+      883915598,
       670977526,
       12288792,
       671005492,
       275390771,
       671005491,
+      879898625,
+      879898626,
       672181325,
       672424049,
       84963863,
@@ -4920,17 +4955,19 @@
       672195082,
       672127520,
       277113709,
-      672181320
+      672181320,
+      879894112,
+      879894113
     ],
     {
-      "ref": "42A",
-      "name": "NFTA 42A Lackawanna",
-      "type": "route",
       "fixme": "verify route at The Shops",
-      "route": "bus",
+      "name": "NFTA 42A Lackawanna",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "42A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -5051,6 +5088,7 @@
       50402910,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
@@ -5093,21 +5131,25 @@
       672181271,
       84963876,
       670977529,
+      879898625,
+      879898626,
       672181325,
       672424049,
       84963863,
+      879894113,
+      879894112,
       672181320,
       277113709,
       672181257
     ],
     {
-      "ref": "70A",
       "name": "NFTA 70A East Aurora",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "70A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -5239,6 +5281,7 @@
       50402910,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
@@ -5326,21 +5369,25 @@
       672181271,
       84963876,
       670977529,
+      879898625,
+      879898626,
       672181325,
       672424049,
       84963863,
+      879894113,
+      879894112,
       672181320,
       277113709,
       672181257
     ],
     {
-      "ref": "70C",
       "name": "NFTA 70C East Aurora",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "70C",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -5455,6 +5502,7 @@
       50402910,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
@@ -5505,6 +5553,8 @@
       672181271,
       84963876,
       670977529,
+      879898625,
+      879898626,
       672181325,
       826204937,
       826204951,
@@ -5532,14 +5582,14 @@
       672181262
     ],
     {
-      "ref": "69B",
-      "name": "NFTA 69B Alden",
-      "type": "route",
       "FIXME": "verify Seneca-Washington-190",
-      "route": "bus",
+      "name": "NFTA 69B Alden",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "69B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -5672,6 +5722,7 @@
       50402910,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
@@ -5722,6 +5773,8 @@
       672181271,
       84963876,
       670977529,
+      879898625,
+      879898626,
       672181325,
       826204937,
       826204951,
@@ -5749,14 +5802,14 @@
       672181262
     ],
     {
-      "ref": "69A",
-      "name": "NFTA 69A Alden",
-      "type": "route",
       "FIXME": "verify Seneca-Washington-190",
-      "route": "bus",
+      "name": "NFTA 69A Alden",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "69A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -5766,6 +5819,8 @@
       82249359,
       672181318,
       671005491,
+      879898625,
+      879898626,
       672181325,
       672424049,
       84963863,
@@ -5886,13 +5941,13 @@
       671005501
     ],
     {
-      "ref": "68A",
       "name": "NFTA 68A George Urban",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "68A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -6020,13 +6075,13 @@
       670977595
     ],
     {
-      "ref": "67A",
       "name": "NFTA 67A Cleveland Hill",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "67A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -6041,8 +6096,10 @@
       138364793,
       138364799,
       114200971,
-      150644122,
       655124665,
+      880298215,
+      880298216,
+      150644122,
       85688307,
       672127438,
       672127437,
@@ -6216,14 +6273,14 @@
       670977595
     ],
     {
-      "ref": "66B",
-      "name": "NFTA 66B Williamsville",
-      "type": "route",
       "fixme": "verify route at Eastern Hills Mall",
-      "route": "bus",
+      "name": "NFTA 66B Williamsville",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "66B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -6390,14 +6447,14 @@
       670977595
     ],
     {
-      "ref": "66A",
-      "name": "NFTA 66A Williamsville",
-      "type": "route",
       "fixme": "verify route at Eastern Hills Mall",
-      "route": "bus",
+      "name": "NFTA 66A Williamsville",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "66A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -6613,6 +6670,8 @@
       826204937,
       672424049,
       84963863,
+      879894113,
+      879894112,
       672181320,
       277113709,
       672181257,
@@ -6642,13 +6701,13 @@
       670977659
     ],
     {
-      "ref": "64A",
       "name": "NFTA 64A Lockport",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "64A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -6784,6 +6843,8 @@
       826204937,
       672424049,
       84963863,
+      879894113,
+      879894112,
       672181320,
       12288703,
       776862653,
@@ -6802,21 +6863,23 @@
       84963863,
       672424049,
       672181325,
+      879898626,
+      879898625,
       671005491,
       275390771,
       82249359
     ],
     {
-      "to": "Main & Niagara Transportation Center",
-      "ref": "61",
       "from": "Downtown Buffalo",
       "name": "NFTA 61 Tonawanda",
-      "type": "route",
-      "route": "bus",
       "network": "Metro Bus",
       "old_name": "North Tonawanda",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "61",
+      "route": "bus",
+      "to": "Main & Niagara Transportation Center",
+      "type": "route"
     }
   ],
   [
@@ -6990,13 +7053,13 @@
       51251692
     ],
     {
-      "ref": "60A",
       "name": "NFTA 60A Niagara Falls",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "60A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -7075,14 +7138,14 @@
       178872179
     ],
     {
-      "ref": "Niagara Falls Trolley",
-      "name": "NFTA 155 Niagara Falls Trolley",
-      "type": "route",
       "fixme": "verify route at 72nd/77th",
-      "route": "bus",
+      "name": "NFTA 155 Niagara Falls Trolley",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "Niagara Falls Trolley",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -7219,13 +7282,13 @@
       5717421
     ],
     {
-      "ref": "55F",
       "name": "NFTA 55F Pine Avenue",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "55F",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -7353,13 +7416,13 @@
       167514681
     ],
     {
-      "ref": "55B",
       "name": "NFTA 55B Pine Avenue",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "55B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -7471,13 +7534,13 @@
       5717421
     ],
     {
-      "ref": "55A",
       "name": "NFTA 55A Pine Avenue",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "55A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -7512,13 +7575,13 @@
       258141699
     ],
     {
-      "ref": "52A",
       "name": "NFTA 54A Military",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "52A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -7599,13 +7662,13 @@
       672181495
     ],
     {
-      "ref": "52A",
       "name": "NFTA 52A Hyde Park",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "52A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -7749,13 +7812,13 @@
       48082202
     ],
     {
-      "ref": "50B",
       "name": "NFTA 50B Main-Niagara",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "50B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -7868,13 +7931,13 @@
       672181495
     ],
     {
-      "ref": "50A",
       "name": "NFTA 50A Main-Niagara",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "50A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -7987,9 +8050,12 @@
       672195046,
       23690150,
       670991458,
+      894723633,
       672181257,
       277113709,
       672181320,
+      879894112,
+      879894113,
       670977613,
       670977658,
       670977660,
@@ -7997,6 +8063,7 @@
       670977659,
       672181319,
       670991458,
+      894723633,
       670977664,
       821763000,
       23690196,
@@ -8031,14 +8098,14 @@
       536166696
     ],
     {
-      "ref": "76S",
-      "name": "NFTA 76S Lotus Bay",
-      "type": "route",
       "FIXME": "verify route at south end",
-      "route": "bus",
+      "name": "NFTA 76S Lotus Bay",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "76S",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -8112,6 +8179,7 @@
       50402910,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
@@ -8166,13 +8234,13 @@
       672181262
     ],
     {
-      "ref": "75H",
       "name": "NFTA 75H West Seneca",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "75H",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -8253,6 +8321,7 @@
       50402910,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
@@ -8307,13 +8376,13 @@
       672181262
     ],
     {
-      "ref": "75A",
       "name": "NFTA 75A West Seneca",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "75A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -8430,13 +8499,19 @@
       854340907,
       12282341,
       670977636,
+      879909058,
+      879908881,
+      879907200,
       649213997,
+      879905679,
       672127521,
       49289699,
       670977498,
       12293395,
       670977496,
+      883915155,
       670977499,
+      883915598,
       670977526,
       12288792,
       671005492,
@@ -8451,6 +8526,7 @@
       50402910,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
@@ -8460,6 +8536,8 @@
       672181257,
       277113709,
       672181320,
+      879894112,
+      879894113,
       670977613,
       670977658,
       670977660,
@@ -8486,13 +8564,13 @@
       672195047
     ],
     {
-      "ref": "74B",
       "name": "NFTA 74B Hamburg",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "74B",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -8564,13 +8642,19 @@
       854340907,
       12282341,
       670977636,
+      879909058,
+      879908881,
+      879907200,
       649213997,
+      879905679,
       672127521,
       49289699,
       670977498,
       12293395,
       670977496,
+      883915155,
       670977499,
+      883915598,
       670977526,
       12288792,
       671005492,
@@ -8585,6 +8669,7 @@
       50402910,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
@@ -8594,6 +8679,8 @@
       672181257,
       277113709,
       672181320,
+      879894112,
+      879894113,
       670977613,
       670977658,
       670977660,
@@ -8620,13 +8707,13 @@
       672195047
     ],
     {
-      "ref": "74A",
       "name": "NFTA 74A Hamburg",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "74A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -8638,6 +8725,25 @@
       672195074,
       148139085,
       14371159,
+      672195071,
+      28256721,
+      879443420,
+      879443421,
+      46528813,
+      46528809,
+      26586761,
+      26586759,
+      46529072,
+      46529069,
+      92785450,
+      44007653,
+      44007654,
+      14317711,
+      44007646,
+      49808373,
+      49808374,
+      672195081,
+      44007638,
       672195067,
       14371740,
       480397628,
@@ -8657,25 +8763,6 @@
       12294921,
       28256736,
       12304024,
-      672195072,
-      28256729,
-      28256726,
-      28256724,
-      46528799,
-      46528804,
-      32049419,
-      32049112,
-      46529059,
-      46529062,
-      92785458,
-      49808634,
-      49808635,
-      35097709,
-      44007652,
-      44007651,
-      49808379,
-      49808380,
-      672195078,
       89946113,
       44007644,
       44007645,
@@ -8747,11 +8834,31 @@
       672181269,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
       672195070,
       672195072,
+      672195072,
+      28256729,
+      28256726,
+      28256724,
+      46528799,
+      46528804,
+      32049419,
+      32049112,
+      46529059,
+      46529062,
+      92785458,
+      49808634,
+      49808635,
+      35097709,
+      44007652,
+      44007651,
+      49808379,
+      49808380,
+      672195078,
       12304024,
       28256736,
       96659284,
@@ -8765,23 +8872,6 @@
       480397628,
       14371740,
       672195067,
-      672195071,
-      28256721,
-      46528813,
-      46528809,
-      26586761,
-      26586759,
-      46529072,
-      46529069,
-      92785450,
-      44007653,
-      44007654,
-      14317711,
-      44007646,
-      49808373,
-      49808374,
-      672195081,
-      44007638,
       44007637,
       35097708,
       49808575,
@@ -8840,22 +8930,26 @@
       672181271,
       84963876,
       670977529,
+      879898625,
+      879898626,
       672181325,
       672424049,
       84963863,
+      879894113,
+      879894112,
       672181320,
       277113709,
       672127520
     ],
     {
-      "ref": "72P",
-      "name": "NFTA 72P Orchard Park",
-      "type": "route",
       "FIXME": "verify route at ECC South",
-      "route": "bus",
+      "name": "NFTA 72P Orchard Park",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "72P",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -8981,6 +9075,7 @@
       672181269,
       51251690,
       670991458,
+      894723633,
       672181267,
       672181266,
       12310648,
@@ -9048,22 +9143,26 @@
       672181271,
       84963876,
       670977529,
+      879898625,
+      879898626,
       672181325,
       672424049,
       84963863,
+      879894113,
+      879894112,
       672181320,
       277113709,
       672127520
     ],
     {
-      "ref": "72A",
-      "name": "NFTA 72A Orchard Park",
-      "type": "route",
       "FIXME": "verify route at The Shops, ECC South",
-      "route": "bus",
+      "name": "NFTA 72A Orchard Park",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "72A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -9171,6 +9270,7 @@
       50402910,
       51251690,
       670991458,
+      894723633,
       672424051,
       23690222,
       39612361,
@@ -9256,14 +9356,14 @@
       258121389
     ],
     {
-      "ref": "204A",
-      "name": "NFTA 204A Airport-Downtown Express",
-      "type": "route",
       "fixme": "verify outbound loop on Pearl-Seneca-Washington-Swan",
-      "route": "bus",
+      "name": "NFTA 204A Airport-Downtown Express",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "204A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -9326,13 +9426,13 @@
       84963863
     ],
     {
-      "ref": "81A",
       "name": "NFTA 81A Eastside",
-      "type": "route",
-      "route": "bus",
       "network": "NFTA Metro",
       "operator": "Niagara Frontier Transit Metro System",
-      "public_transport:version": "1"
+      "public_transport:version": "1",
+      "ref": "81A",
+      "route": "bus",
+      "type": "route"
     }
   ],
   [
@@ -9353,6 +9453,8 @@
       277113703,
       826204934,
       767660523,
+      879894113,
+      879894112,
       672181320,
       12288703,
       776862653,
@@ -9448,80 +9550,20 @@
       48946895,
       12291814,
       672181312,
-      672181320
+      672181320,
+      879894112,
+      879894113
     ],
     {
-      "to": "Tonawanda",
-      "ref": "79",
       "from": "Downtown Buffalo",
       "name": "NFTA 79 Tonawanda",
-      "type": "route",
-      "route": "bus",
       "network": "Metro Bus",
       "operator": "Niagara Frontier Transit Authority",
-      "public_transport:version": "1"
-    }
-  ],
-  [
-    11364343,
-    [
-      7768318474,
-      7768366111,
-      7768366103,
-      7768366096,
-      7768366092,
-      7768366090,
-      7768366088,
-      7768366086,
-      7768216387,
-      533405712,
-      7768180668,
-      832028261,
-      7768180669,
-      832028260,
-      486769924,
-      535712841,
-      7768180671,
-      331010799,
-      12311691,
-      832048176,
-      832048177,
-      91481415,
-      826204955,
-      277113698,
-      236835483,
-      236835428,
-      826204942,
-      832018785,
-      832028255
-    ],
-    {
-      "to": "Erie Canal Harbor",
-      "ref": "Metro",
-      "from": "University",
-      "name": "NFTA Metro Rail: University \u2192 Erie Canal Harbor",
-      "type": "route",
-      "route": "light_rail",
-      "colour": "#73757D",
-      "network": "NFTA",
-      "operator": "Niagara Frontier Transportation Authority",
-      "public_transport:version": "2"
-    }
-  ],
-  [
-    11364344,
-    [
-      3517747,
-      11364343
-    ],
-    {
-      "ref": "Metro",
-      "name": "NFTA Metro Rail",
-      "type": "route_master",
-      "colour": "#73757D",
-      "network": "NFTA",
-      "operator": "Niagara Frontier Transportation Authority",
-      "route_master": "light_rail"
+      "public_transport:version": "1",
+      "ref": "79",
+      "route": "bus",
+      "to": "Tonawanda",
+      "type": "route"
     }
   ]
 ]
