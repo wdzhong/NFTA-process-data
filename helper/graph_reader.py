@@ -1,6 +1,6 @@
 import json
 import pickle
-from helper.global_var import save_type_JSON, save_type_pickle
+from helper.global_var import SAVE_TYPE_JSON, SAVE_TYPE_PICKLE
 
 
 def graph_reader(graph_path, save_type, save_filename_list):
@@ -15,7 +15,7 @@ def graph_reader(graph_path, save_type, save_filename_list):
 
     save_type: int
         The type of the file, use the following variable from helper.global_var
-        save_type_JSON or save_type_pickle
+        SAVE_TYPE_JSON or SAVE_TYPE_PICKLE
 
     save_filename_list: List of string
         List of filename (without suffix) that need to be read.
@@ -27,12 +27,12 @@ def graph_reader(graph_path, save_type, save_filename_list):
     """
     result_list = []
     for save_filename in save_filename_list:
-        if save_type == save_type_pickle:
+        if save_type == SAVE_TYPE_PICKLE:
             temp_filepath = graph_path / "{}.p".format(save_filename)
             with open(temp_filepath, 'rb') as f:
                 result_list.append(pickle.load(f))
                 print("{} loaded".format(temp_filepath))
-        elif save_type == save_type_JSON:
+        elif save_type == SAVE_TYPE_JSON:
             temp_filepath = graph_path / "{}.json".format(save_filename)
             with open(temp_filepath, 'r') as f:
                 result_list.append(json.load(f))

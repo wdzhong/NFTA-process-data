@@ -3,7 +3,7 @@ import folium
 from pathlib import Path
 from helper.graph_reader import graph_reader
 from helper.helper_time_range_index_to_str import time_range_index_to_str, time_range_index_to_time_range_str
-from helper.global_var import google_map_api_key, save_type_pickle
+from helper.global_var import GOOGLE_MAPS_API_KEY, SAVE_TYPE_PICKLE
 import gmplot
 
 
@@ -150,7 +150,7 @@ def show_traffic_speed(final_way_table, final_node_table, road_speeds, time_rang
         [description]
     """
     save_filename_list = ["way_types", "way_type_avg_speed_limit"]
-    temp_map_dates = graph_reader(Path("graph/"), save_type_pickle, save_filename_list)
+    temp_map_dates = graph_reader(Path("graph/"), SAVE_TYPE_PICKLE, save_filename_list)
     way_types = temp_map_dates[0]
     way_type_avg_speed_limit = temp_map_dates[1]
 
@@ -255,9 +255,9 @@ def show_traffic_speed_googlemap(final_way_table, final_node_table, road_speeds,
     RuntimeError
         [description]
     """
-    if google_map_api_key == "":
-        raise RuntimeError('Cant find google_map_api_key, please check helper/globle_var.py')
-    gmap = gmplot.GoogleMapPlotter(42.89, -78.74, 10, apikey=google_map_api_key)
+    if GOOGLE_MAPS_API_KEY == "":
+        raise RuntimeError('Cant find GOOGLE_MAPS_API_KEY, please check helper/globle_var.py')
+    gmap = gmplot.GoogleMapPlotter(42.89, -78.74, 10, apikey=GOOGLE_MAPS_API_KEY)
 
     for way, single_road_speed in road_speeds.items():
         road_speed, sample_speed, sample_time, max_speed, min_speed = \

@@ -7,7 +7,7 @@ import math
 
 from helper.debug_show_traffic_speed_map import show_traffic_speed
 from helper.helper_time_range_index_to_str import time_range_index_to_time_range_str
-from helper.global_var import flag_debug, save_type_JSON, save_type_pickle
+from helper.global_var import FLAG_DEBUG, SAVE_TYPE_JSON, SAVE_TYPE_PICKLE
 from find_nearest_road import find_nearest_road, distance
 from helper.graph_reader import graph_reader
 from pathlib import Path
@@ -156,14 +156,14 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
                         possible_relations1.add(key)
 
             if len(possible_relations1) <= 0:
-                if flag_debug:
+                if FLAG_DEBUG:
                     print("No possible_relations found in {}, line {}".format(filename, i))
                 continue
 
             projection1, way1 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
                                                   possible_relations1, [lat1, lng1])
             if way1 < 0:
-                if flag_debug:
+                if FLAG_DEBUG:
                     print("Error while running find_nearest_road in {}, line {}".format(filename, i))
                 continue
 
@@ -176,14 +176,14 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
                         possible_relations2.add(key)
 
             if len(possible_relations2) <= 0:
-                if flag_debug:
+                if FLAG_DEBUG:
                     print("No possible_relations found in {}, line {}".format(filename, i + 1))
                 continue
 
             projection2, way2 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
                                                   possible_relations2, [lat2, lng2])
             if way1 < 0:
-                if flag_debug:
+                if FLAG_DEBUG:
                     print("Error while running find_nearest_road in {}, line {}".format(filename, i+1))
                 continue
 
@@ -280,7 +280,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         for key, value in road_speeds.items():
             writer.writerow([key] + value)
 
-    if flag_debug:
+    if FLAG_DEBUG:
         print("Generating map...")
         show_traffic_speed(final_way_table, final_node_table, road_speeds, -1, -1, time_slot_interval, map_type)
         # for i in tqdm(range(0, 288, 12)):
@@ -311,21 +311,21 @@ if __name__ == '__main__':
     if len(sys.argv) >= 3:
         result_file_path = Path(sys.argv[2])
 
-    save_type = save_type_pickle
+    save_type = SAVE_TYPE_PICKLE
     if len(sys.argv) >= 4:
         if sys.argv[3] == "JSON":
-            save_type = save_type_JSON
+            save_type = SAVE_TYPE_JSON
         elif sys.argv[3] == "pickle":
-            save_type = save_type_pickle
+            save_type = SAVE_TYPE_PICKLE
         else:
             print("invalid Save format")
             print("Save format: the format to save the result, by default is pickle")
             print("             possible value: JSON and pickle")
             exit(0)
 
-    if save_type == save_type_pickle:
+    if save_type == SAVE_TYPE_PICKLE:
         print("Result type: pickle")
-    elif save_type == save_type_JSON:
+    elif save_type == SAVE_TYPE_JSON:
         print("Result type: JSON")
 
     save_filename_list = ["final_node_table", "final_way_table", "final_relation_table"]
