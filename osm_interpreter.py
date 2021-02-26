@@ -1,65 +1,13 @@
 import os
 import platform
-import osmium as osm
+import re
+
 import sys
 import time
+from osm_handler import OSMHandler
 from helper.graph_writer import graph_writer
 from pathlib import Path
 from helper.global_var import flag_debug, save_type_JSON, save_type_pickle
-
-
-class OSMHandler(osm.SimpleHandler):
-    def __init__(self):
-        super(OSMHandler, self).__init__()
-        self.nodes = []
-        self.ways = []
-        self.relations = []
-        # self.data = []
-
-    # It seems .data never used
-    # in a test, remove this make 60% speed increase. (108s -> 41s)
-
-    # def tag_inventory(self, elem, elem_type):
-    #     for tag in elem.tags:
-    #         self.data.append([elem_type,
-    #                           elem.id,
-    #                           elem.version,
-    #                           elem.visible,
-    #                           pd.Timestamp(elem.timestamp),
-    #                           elem.uid,
-    #                           elem.user,
-    #                           elem.changeset,
-    #                           len(elem.tags)])
-
-    def node(self, n):
-        # self.tag_inventory(n, "node")
-        self.nodes.append(["node", n.id, n.location])
-
-    def way(self, w):
-        # self.tag_inventory(w, "way")
-        info = {}
-        waypoints = []
-        for tag in w.tags:
-            info.update({(tag.k, tag.v)})
-        for node in w.nodes:
-            waypoints.append(node.ref)
-        self.ways.append([w.id, waypoints, info])
-        # print(w)
-
-    def relation(self, r):
-        # self.tag_inventory(r, "relation")
-        if 'name' in r.tags:
-            if 'NFTA' in r.tags['name']:
-                info = {}
-                waypoints = []
-                for tag in r.tags:
-                    info.update({(tag.k, tag.v)})
-                for node in r.members:
-                    waypoints.append(node.ref)
-                    # waypoints.append(node)
-                    # print('{},{},{}'.format(node.ref, node.role, node.type))
-                self.relations.append([r.id, waypoints, info])
-                # print(r.tags['name'])
 
 
 def debug_show_all_route(relations, final_node_table, final_way_table):
@@ -159,6 +107,7 @@ def get_map_data(map_file, result_file_path, save_type):
     final_relation_table = {}
     used_nodes = set()
     used_ways = set()
+    way_tag_table = {}
 
     for node in osmhandler.nodes:
         latitudes.append(node[2].lat)
@@ -170,6 +119,8 @@ def get_map_data(map_file, result_file_path, save_type):
     for way in osmhandler.ways:
         ways.append(way)
         way_table.update({way[0]: way[1]})
+        way_tag_table.update({way[0]: way[2]})
+        # print(way[2])
     if flag_debug:
         print("[Debug] len(ways) = %d" % len(ways))
 
@@ -215,9 +166,64 @@ def get_map_data(map_file, result_file_path, save_type):
         print("[Debug] len(final_relation_table) = %d" % len(final_relation_table))
         print("[Debug] Map of all route: ", debug_show_all_route(relations, final_node_table, final_way_table))
 
+    # Create a graph that use [OSM's way] as the node of the graph
+    # and use [OSM's node] as the edge of the graph
+    node_to_way_mapping = {}
+    way_graph_by_set = {}
+    for way in final_way_table:
+        for node in final_way_table[way]:
+            if node not in node_to_way_mapping:
+                node_to_way_mapping[node] = {way}
+            else:
+                node_to_way_mapping[node].add(way)
+
+    for node, ways in node_to_way_mapping.items():
+        if len(ways) > 1:
+            for way in ways:
+                for way_other in (ways - {way}):
+                    if way in way_graph_by_set:
+                        way_graph_by_set[way].add(way_other)
+                    else:
+                        way_graph_by_set[way] = {way_other}
+
+    # Convert the graph to a adjacency list format data structure
+    way_graph_by_list = {}
+    for key, value in way_graph_by_set.items():
+        if key in final_way_table:
+            way_graph_by_list[key] = list(value)
+
+    # Create a dictionary that use way_id as key and store the type of the way, store in way_types
+    # (the type of the way is mark as "highway" tag in OSM)
+    # Also we compute the average speed limit for each type of the road and store in the way_type_avg_speed_limit
+    way_types = {}
+    way_type_avg_speed_limit = {}
+    for key, value in way_graph_by_set.items():
+        if "highway" in way_tag_table[key]:
+            way_type = way_tag_table[key]["highway"]
+            way_types[key] = way_type
+
+            if way_type not in way_type_avg_speed_limit:
+                way_type_avg_speed_limit[way_type] = []
+
+            if "maxspeed" in way_tag_table[key]:
+                re_result = re.search(r"\d*", way_tag_table[key]["maxspeed"])
+                if re_result is None:
+                    continue
+                way_type_avg_speed_limit[way_type].append(int(re_result.group()))
+
+    # To simplify the result, we round the result to the nearest multiple of 5.
+    for key, value in way_type_avg_speed_limit.items():
+        if len(value) != 0:
+            way_type_avg_speed_limit[key] = 5 * round(sum(value) / len(value) / 5)
+        else:
+            way_type_avg_speed_limit[key] = 0
+
+
     # Save data to files
-    save_filename_list = ["final_node_table", "final_way_table", "final_relation_table", "relations"]
-    save_variable_list = [final_node_table, final_way_table, final_relation_table, relations]
+    save_filename_list = ["final_node_table", "final_way_table", "final_relation_table", "relations", "way_graph",
+                          "way_types", "way_type_avg_speed_limit"]
+    save_variable_list = [final_node_table, final_way_table, final_relation_table, relations, way_graph_by_list,
+                          way_types, way_type_avg_speed_limit]
     graph_writer(result_file_path, save_type, save_filename_list, save_variable_list)
 
     return final_node_table, final_way_table, final_relation_table, relations
@@ -268,6 +274,7 @@ if __name__ == '__main__':
         print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))
     print("Done")
 
+    # Todo: This bug needs to be fixed. (Shiluo)
     if platform.system() != "Windows":
         exit(0)
     else:
