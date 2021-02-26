@@ -145,7 +145,10 @@ def show_traffic_speed_googlemap(final_way_table, final_node_table, road_speeds,
 
     time_range_str = time_range_index_to_time_range_str(time_range_start_index, time_range_end_index, "")
 
-    temp_path = "debug/find_traffic_speed-googleMap/{}.html".format(time_range_str)
+    google_map_save_folder = Path(".") / "debug" / "find_traffic_speed-googleMap"
+    if not os.path.isdir(google_map_save_folder):
+        os.makedirs(google_map_save_folder, exist_ok=True)
+    temp_path = google_map_save_folder / f"{time_range_str}.html"
     gmap.draw(temp_path)
     url_path = "file://" + os.path.abspath(temp_path)
     return url_path
