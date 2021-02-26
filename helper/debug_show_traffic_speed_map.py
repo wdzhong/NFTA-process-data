@@ -9,6 +9,24 @@ import gmplot
 
 def get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index, road_speed_time_range_end_index,
                            time_slot_interval):
+    """TODO
+
+    Parameters
+    ----------
+    single_road_speed : [type]
+        [description]
+    road_speed_time_range_start_index : [type]
+        [description]
+    road_speed_time_range_end_index : [type]
+        [description]
+    time_slot_interval : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     sample_speed = []
     sample_time = []
     road_speed = 0
@@ -40,6 +58,20 @@ def get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index,
 
 
 def get_traffic_speed_color(road_speed, road_type_speed_limit):
+    """TODO
+
+    Parameters
+    ----------
+    road_speed : [type]
+        [description]
+    road_type_speed_limit : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     # Consider NYC bus has average speed ~7 mph, and the average road speed limit in buffalo is around 30.
     # So we assume any bus that run faster then 0.2 * speed_limit is a "normal" speed, and the road has a good condition
     if road_type_speed_limit <= 0:
@@ -58,6 +90,26 @@ def get_traffic_speed_color(road_speed, road_type_speed_limit):
 
 
 def map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_speed):
+    """TODO
+
+    Parameters
+    ----------
+    road_speed : [type]
+        [description]
+    sample_speed : [type]
+        [description]
+    sample_time : [type]
+        [description]
+    max_speed : [type]
+        [description]
+    min_speed : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     if road_speed != 0:
         sample_text = ""
         for temp_speed, temp_time in zip(sample_speed, sample_time):
@@ -73,7 +125,30 @@ def map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_spe
 
 def show_traffic_speed(final_way_table, final_node_table, road_speeds, time_range_start_index,
                        time_range_end_index, time_slot_interval, map_type="GoogleMap"):
+    """TODO
 
+    Parameters
+    ----------
+    final_way_table : [type]
+        [description]
+    final_node_table : [type]
+        [description]
+    road_speeds : [type]
+        [description]
+    time_range_start_index : [type]
+        [description]
+    time_range_end_index : [type]
+        [description]
+    time_slot_interval : [type]
+        [description]
+    map_type : str, optional
+        [description], by default "GoogleMap"
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     save_filename_list = ["way_types", "way_type_avg_speed_limit"]
     temp_map_dates = graph_reader(Path("graph/"), save_type_pickle, save_filename_list)
     way_types = temp_map_dates[0]
@@ -93,6 +168,32 @@ def show_traffic_speed(final_way_table, final_node_table, road_speeds, time_rang
 
 def show_traffic_speed_OSM(final_way_table, final_node_table, road_speeds, time_range_start_index,
                            time_range_end_index, time_slot_interval, way_types, way_type_avg_speed_limit):
+    """TODO
+
+    Parameters
+    ----------
+    final_way_table : [type]
+        [description]
+    final_node_table : [type]
+        [description]
+    road_speeds : [type]
+        [description]
+    time_range_start_index : [type]
+        [description]
+    time_range_end_index : [type]
+        [description]
+    time_slot_interval : [type]
+        [description]
+    way_types : [type]
+        [description]
+    way_type_avg_speed_limit : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     m = folium.Map(location=[42.89, -78.74], tiles="OpenStreetMap", zoom_start=10)
 
     for way, single_road_speed in road_speeds.items():
@@ -123,6 +224,37 @@ def show_traffic_speed_OSM(final_way_table, final_node_table, road_speeds, time_
 
 def show_traffic_speed_googlemap(final_way_table, final_node_table, road_speeds, time_range_start_index,
                                  time_range_end_index, time_slot_interval, way_types, way_type_avg_speed_limit):
+    """TODO
+
+    Parameters
+    ----------
+    final_way_table : [type]
+        [description]
+    final_node_table : [type]
+        [description]
+    road_speeds : [type]
+        [description]
+    time_range_start_index : [type]
+        [description]
+    time_range_end_index : [type]
+        [description]
+    time_slot_interval : [type]
+        [description]
+    way_types : [type]
+        [description]
+    way_type_avg_speed_limit : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+
+    Raises
+    ------
+    RuntimeError
+        [description]
+    """
     if google_map_api_key == "":
         raise RuntimeError('Cant find google_map_api_key, please check helper/globle_var.py')
     gmap = gmplot.GoogleMapPlotter(42.89, -78.74, 10, apikey=google_map_api_key)
