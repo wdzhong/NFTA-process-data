@@ -7,7 +7,7 @@ import time
 from osm_handler import OSMHandler
 from helper.graph_writer import graph_writer
 from pathlib import Path
-from helper.global_var import flag_debug, save_type_JSON, save_type_pickle
+from helper.global_var import FLAG_DEBUG, SAVE_TYPE_JSON, SAVE_TYPE_PICKLE
 
 
 def debug_show_all_route(relations, final_node_table, final_way_table):
@@ -71,7 +71,7 @@ def get_map_data(map_file, result_file_path, save_type):
 
     save_type: int
         The type to store the file, use the following variable
-        save_type_JSON or save_type_pickle
+        SAVE_TYPE_JSON or SAVE_TYPE_PICKLE
 
     Returns
     -------
@@ -113,7 +113,7 @@ def get_map_data(map_file, result_file_path, save_type):
         latitudes.append(node[2].lat)
         longitudes.append(node[2].lon)
         node_table.update({node[1]: [node[2].lat, node[2].lon]})
-    if flag_debug:
+    if FLAG_DEBUG:
         print("[Debug] len(latitudes) = %d" % len(latitudes))
 
     for way in osmhandler.ways:
@@ -121,7 +121,7 @@ def get_map_data(map_file, result_file_path, save_type):
         way_table.update({way[0]: way[1]})
         way_tag_table.update({way[0]: way[2]})
         # print(way[2])
-    if flag_debug:
+    if FLAG_DEBUG:
         print("[Debug] len(ways) = %d" % len(ways))
 
     # In the OSMHandler, I only saved relations that had NFTA in the name,
@@ -142,7 +142,7 @@ def get_map_data(map_file, result_file_path, save_type):
             elif index in node_table:
                 used_nodes.add(index)
                 # print('({},{})'.format(node_table[index][0], node_table[index][1]))
-    if flag_debug:
+    if FLAG_DEBUG:
         print("[Debug] len(used_nodes) = %d" % len(used_nodes))
         print("[Debug] len(used_nodes) = %d" % len(used_ways))
 
@@ -160,7 +160,7 @@ def get_map_data(map_file, result_file_path, save_type):
     for relation in relations:
         final_relation_table.update({relation[0]: [relation[1], relation[2]]})
 
-    if flag_debug:
+    if FLAG_DEBUG:
         print("[Debug] len(final_node_table) = %d" % len(final_node_table))
         print("[Debug] len(final_way_table)= %d" % len(final_way_table))
         print("[Debug] len(final_relation_table) = %d" % len(final_relation_table))
@@ -249,12 +249,12 @@ if __name__ == '__main__':
     if len(sys.argv) >= 3:
         result_file_path = Path(sys.argv[2])
 
-    save_type = save_type_pickle
+    save_type = SAVE_TYPE_PICKLE
     if len(sys.argv) >= 4:
         if sys.argv[3] == "JSON":
-            save_type = save_type_JSON
+            save_type = SAVE_TYPE_JSON
         elif sys.argv[3] == "pickle":
-            save_type = save_type_pickle
+            save_type = SAVE_TYPE_PICKLE
         else:
             print("invalid Save format")
             print("Save format: the format to save the result, by default is pickle")
@@ -263,14 +263,14 @@ if __name__ == '__main__':
 
     print("Map File   : %s" % map_file)
     print("Result path: %s" % result_file_path)
-    if save_type == save_type_pickle:
+    if save_type == SAVE_TYPE_PICKLE:
         print("Result type: pickle")
-    elif save_type == save_type_JSON:
+    elif save_type == SAVE_TYPE_JSON:
         print("Result type: JSON")
 
     start = time.process_time()
     get_map_data(map_file, result_file_path, save_type)
-    if flag_debug:
+    if FLAG_DEBUG:
         print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))
     print("Done")
 

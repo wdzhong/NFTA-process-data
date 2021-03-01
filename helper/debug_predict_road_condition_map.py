@@ -3,7 +3,7 @@ import folium
 
 from helper.debug_show_traffic_speed_map import get_traffic_speed_color
 from helper.graph_reader import graph_reader
-from helper.global_var import google_map_api_key, save_type_pickle
+from helper.global_var import GOOGLE_MAPS_API_KEY, SAVE_TYPE_PICKLE
 from datetime import datetime
 from pathlib import Path
 import gmplot
@@ -11,7 +11,7 @@ import gmplot
 
 def show_traffic_speed(road_speeds, timestamp, map_type="OSM"):
     graph_need_read = ["way_types", "way_type_avg_speed_limit", "final_node_table", "final_way_table"]
-    temp_map_dates = graph_reader(Path("graph"), save_type_pickle, graph_need_read)
+    temp_map_dates = graph_reader(Path("graph"), SAVE_TYPE_PICKLE, graph_need_read)
     way_types = temp_map_dates[0]
     way_type_avg_speed_limit = temp_map_dates[1]
     final_node_table = temp_map_dates[2]
@@ -54,9 +54,9 @@ def show_traffic_speed_OSM(final_way_table, final_node_table, road_speeds, times
 
 def show_traffic_speed_googlemap(final_way_table, final_node_table, road_speeds, timestamp, way_types,
                                  way_type_avg_speed_limit):
-    if google_map_api_key == "":
-        raise RuntimeError('Cant find google_map_api_key, please check helper/globle_var.py')
-    gmap = gmplot.GoogleMapPlotter(42.89, -78.74, 10, apikey=google_map_api_key)
+    if GOOGLE_MAPS_API_KEY == "":
+        raise RuntimeError('Cant find GOOGLE_MAPS_API_KEY, please check helper/globle_var.py')
+    gmap = gmplot.GoogleMapPlotter(42.89, -78.74, 10, apikey=GOOGLE_MAPS_API_KEY)
 
     for way, single_road_speed in road_speeds.items():
         line_color = get_traffic_speed_color(single_road_speed,

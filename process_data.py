@@ -50,9 +50,9 @@ def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
     # 216 - McKinley Mall-Gowanda (stopped May 1, 2012)
 
     # filter time
-    data = data[data.apply(lambda row: global_var.process_data_start_time <=
+    data = data[data.apply(lambda row: global_var.PROCESS_DATA_START_TIME <=
                                        datetime.fromtimestamp(row['location time']).hour <=
-                                       global_var.process_data_end_time, axis=1)]
+                                       global_var.PROCESS_DATA_END_TIME, axis=1)]
 
     return data
 

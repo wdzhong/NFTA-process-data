@@ -1,17 +1,17 @@
 # When it is True, the program will return more things for debug purpose
-flag_debug = True
+FLAG_DEBUG = True
 # find_nearest_road debug will print lot more information then a general debug print. It is config by a separate flag
-flag_find_nearest_road_debug = False
+FLAG_FIND_NEAREST_ROAD_DEBUG = False
 
 # Google Map API key for generate map
 # Get API key https://developers.google.com/maps/documentation/javascript/get-api-key
-google_map_api_key = ""
+GOOGLE_MAPS_API_KEY = ""
 
 # save_type
-save_type_JSON = 1
-save_type_pickle = 2
+SAVE_TYPE_JSON = 1
+SAVE_TYPE_PICKLE = 2
 
 # process_data
-# The program will only read the data from process_data_start_time process_data_end_time
-process_data_start_time = 0
-process_data_end_time = 24
+# The program will only read the data from PROCESS_DATA_START_TIME to PROCESS_DATA_END_TIME
+PROCESS_DATA_START_TIME = 0
+PROCESS_DATA_END_TIME = 24

@@ -4,7 +4,7 @@ import os
 import queue
 import sys
 import time
-from helper.global_var import flag_debug, save_type_pickle
+from helper.global_var import FLAG_DEBUG, SAVE_TYPE_PICKLE
 from helper.graph_reader import graph_reader
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -182,7 +182,7 @@ def get_history_speed_matrix_list(history_data_date_str, config_weight, interval
             history_speed_matrix_list.append(read_speed_matrix_from_file(date_str))
         else:
             history_data_missing_idx_list.append(i)
-            if flag_debug:
+            if FLAG_DEBUG:
                 print(date_str, " missing")
 
     config_weight = reassign_weight(config_weight, set(history_data_missing_idx_list))
@@ -347,7 +347,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
         return -1
 
     save_filename_list = ["way_graph", "way_types", "way_type_avg_speed_limit"]
-    temp_map_dates = graph_reader(Path("graph/"), save_type_pickle, save_filename_list)
+    temp_map_dates = graph_reader(Path("graph/"), SAVE_TYPE_PICKLE, save_filename_list)
     way_graph = temp_map_dates[0]
     way_types = temp_map_dates[1]
     way_type_avg_speed_limit = temp_map_dates[2]
@@ -365,7 +365,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
     for offset in config_history_date:
         history_data_date_str.append((predict_time + timedelta(days=offset)).strftime("%Y%m%d"))
 
-    if flag_debug:
+    if FLAG_DEBUG:
         print("Predict time: {}".format(predict_time.strftime("%Y-%m-%d %H:%M:%S")))
         print("History data date:{}".format(history_data_date_str))
 
@@ -376,7 +376,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
     if len(history_speed_matrix_list) == 0:
         return {"Error": "No enough data for predict"}
 
-    if flag_debug:
+    if FLAG_DEBUG:
         print("{} day(s) load".format(len(history_speed_matrix_list)))
 
     full_way_id_set, usable_way_id_set = get_way_id_set(history_speed_matrix_list)
@@ -435,7 +435,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
     predict_speed_dict = estimate_no_data_road_speed_using_BFS(predict_speed_dict, way_graph, way_types,
                                                                way_type_avg_speed_limit)
 
-    if flag_debug:
+    if FLAG_DEBUG:
         print(show_traffic_speed(predict_speed_dict, predict_timestamp))
         # print(predict_speed_dict)
 
@@ -453,5 +453,5 @@ if __name__ == '__main__':
     timestamp = int(sys.argv[1])
     start = time.process_time()
     predict_road_condition(timestamp)
-    if flag_debug:
+    if FLAG_DEBUG:
         print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))

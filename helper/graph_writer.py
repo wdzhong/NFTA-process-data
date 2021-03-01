@@ -1,6 +1,6 @@
 import json
 import pickle
-from helper.global_var import save_type_JSON, save_type_pickle
+from helper.global_var import SAVE_TYPE_JSON, SAVE_TYPE_PICKLE
 
 
 def graph_writer(graph_path, save_type, save_filename_list, save_variable_list):
@@ -15,7 +15,7 @@ def graph_writer(graph_path, save_type, save_filename_list, save_variable_list):
 
     save_type: int
         The type of the file, use the following variable from helper.global_var
-        save_type_JSON or save_type_pickle
+        SAVE_TYPE_JSON or SAVE_TYPE_PICKLE
 
     save_filename_list: List of string
         List of filename (without suffix) that need to be save.
@@ -29,12 +29,12 @@ def graph_writer(graph_path, save_type, save_filename_list, save_variable_list):
         No return
     """
     for save_filename, save_variable in zip(save_filename_list, save_variable_list):
-        if save_type == save_type_pickle:
+        if save_type == SAVE_TYPE_PICKLE:
             temp_filepath = graph_path / "{}.p".format(save_filename)
             with open(temp_filepath, 'wb') as f:
                 pickle.dump(save_variable, f)
                 print("{} saved".format(temp_filepath))
-        elif save_type == save_type_JSON:
+        elif save_type == SAVE_TYPE_JSON:
             temp_filepath = graph_path / "{}.json".format(save_filename)
             with open(temp_filepath, 'w') as f:
                 json.dump(save_variable, f, indent=2)
