@@ -3,50 +3,85 @@ To run:
 
 $ python homepage.py
 '''
+from pathlib import Path
+import datetime
+import json
 
 from flask import Flask, render_template, request, jsonify
 app = Flask(__name__)
-
-######## Example data, in sets of 3 ############
-data = list(range(1, 300, 3))
-print (data)
 
 
 @app.route("/")
 def home_page():
     # return "Hello, world!"
-    example_embed = "This string is from python"
+    example_embed = "Welcome!"
     return render_template("index.html", embed=example_embed)
 
-######## Example fetch ############
-@app.route('/test', methods=['GET', 'POST'])
-def testfn():
-    # POST request
-    if request.method == 'POST':
-        print(request.get_json())  # parse as JSON
-        return 'OK', 200
-    # GET request
-    else:
-        message = {'greeting': 'Hello from Flask!'}
-        return jsonify(message)  # serialize and use JSON headers
 
-######## Data fetch ############
-@app.route('/getdata/<transaction_id>/<second_arg>', methods=['GET','POST'])
-def datafind(transaction_id, second_arg):
-    # POST request
-    if request.method == 'POST':
-        print('Incoming..')
-        print(request.get_text())  # parse as text
-        return 'OK', 200
-    # GET request
-    else:
-        message = 't_in = %s ; result: %s ; opt_arg: %s'%(transaction_id, data[int(transaction_id)], second_arg)
-        return message #jsonify(message)  # serialize and use JSON headers
+@app.route("/get_traffic_data/<timestamp>/<time_interval>")
+def retrieve_traffic_data(timestamp, time_interval):
+    """
+    Get the traffic data for the given timestamp (at the nearest time interval/slot) and time_interval.
 
-@app.route("/get_data/<year>/month/day/h/m")
-def fun():
-    # TODO: retrieve
-    return data
+    Parameters
+    ----------
+    timestamp: str
+        A timestamp that is in iso format, e.g., 2020-07-30T12:00
+
+    time_interval: str
+        The time interval size that the user has selected, e.g., 15, 30, and 45.
+
+    Returns
+    -------
+    Serilized Json object, containing traffic data, which has the following format,
+    {
+        "generate_timestr": "2021-03-02 19:52:44",
+        "generate_timestamp": 1614732764, .
+        "time_slot_interval": 15,
+        "interval_idx": 0,
+        "predict_time_range": "2020-07-30 00:00 - 00:14",
+        "road_speed": [{"points": [[42.9597583, -78.8131567], [42.9599607, -78.812652], [42.9601687, -78.812126], [42.9605557, -78.811146], [42.9613168, -78.809176], [42.9613743, -78.8090273]],
+                        "speed": 16.274295463111194,
+                        "speed_ratio": 0.46497987037460553},
+                        ...
+                      ]
+    }
+    """
+    # retrieve traffic at the specific timestamp (during the nearest interval)
+    print(timestamp)
+    dt = datetime.datetime.fromisoformat(timestamp)
+
+    # find the nearest interval of the timestamp based on the time_interval size
+    interval_id = get_nearest_interval(dt, int(time_interval))
+
+    # TODO: use global (constant) path
+    # data_path = Path('.') / 'cache' / 'predict_result' / '20200730' / '15' / '48.json'
+    data_path = Path('.') / 'cache' / 'predict_result' / dt.strftime('%Y%m%d') / time_interval / f'{interval_id}.json'
+    print(data_path)
+    with open(data_path, 'r') as fp:
+        data = json.load(fp)
+
+    return jsonify(data)  # serialize and use JSON headers
+
+
+def get_nearest_interval(dt: datetime.datetime, interval_size: int) -> int:
+    """
+    Get the nearest time interval that the datetime falls in.
+
+    Parameters
+    ----------
+    dt: datetime
+        The datetime object
+
+    interval_size: int
+        The size of each time interval
+
+    Returns
+    -------
+    int: the index of the interval that the given datetime falls in.
+    """
+    total_minutes = dt.hour * 60 + dt.minute + (1 if dt.second else 0)
+    return total_minutes // interval_size
 
 app.run(debug=True)
 
