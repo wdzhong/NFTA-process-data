@@ -1,3 +1,24 @@
+
+<head>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <style type="text/css">
+        #map {
+            height: 80%;;
+        }
+    </style>
+    <script>
+        let map;
+        let polylines;  // save the Google Maps polyline "handlers" (list of object) s.t. we can clear them when needed.
+
+        function initMap() {
+          map = new google.maps.Map(document.getElementById("map"), {
+            center: { lat: 42.89, lng: -78.74},
+            zoom: 12,
+          });
+        }
+      </script>
+</head>
+
 <body>
     <h1> Python Fetch Example</h1>
 
@@ -6,6 +27,10 @@
 
     <input id="datetime_picker" type="datetime-local" name="traffic_time" value="2017-06-01T08:30">
     <button id="get_traffic_for_time_btn" name="get_traffic_for_time_btn" onclick="get_traffic_for_selected_time()">Get Traffic Condition</button>
+
+    <div id="map"></div>
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=<GOOGLE_MAPS_API_KEY>&callback=initMap&libraries=&v=weekly" async></script>
 
     <script>
         // substitution test
