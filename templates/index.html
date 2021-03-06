@@ -20,13 +20,14 @@
 </head>
 
 <body>
-    <h1> Python Fetch Example</h1>
+    <h1>Traffic Condtion in Buffalo, NY</h1>
 
     <p id='embed'>To be replaced.</p>
     <p id='clock'>Time</p>
 
     <input id="datetime_picker" type="datetime-local" name="traffic_time">
     <button id="get_traffic_for_time_btn" name="get_traffic_for_time_btn" onclick="get_traffic_for_selected_time()">Get Traffic Condition</button>
+    <button onclick="">Show Current Traffic</button>
     <button onclick="clear_polylines_from_google_maps()">Clear Maps</button>
 
     <div id="map"></div>
@@ -35,27 +36,7 @@
 
     <script>
         // substitution test
-        document.getElementById('embed').innerHTML = "{{embed}}"
-
-        // fetch json
-          fetch('/test')
-              .then(function (response) {
-                  return response.json();
-              }).then(function (text) {
-                  console.log('GET response text:');
-                  console.log(text); // Print the greeting as text
-                  console.log(JSON.stringify(text))
-                  console.log('')
-              });
-
-        // fetch results
-          fetch('/getdata/10/33')
-              .then(function (response) {
-                  return response.text();
-              }).then(function (text) {
-                  console.log('GET response text:');
-                  console.log(text); // Print the greeting as text
-              });
+        document.getElementById('embed').innerHTML = "{{embed}}";
 
         // set the value of the datetime picker
         var cur_datetime = new Date();
@@ -158,6 +139,7 @@
 
         startTime()
 
-        </script>
+    </script>
 
-<body>
+</body>
+
