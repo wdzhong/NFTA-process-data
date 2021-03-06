@@ -65,6 +65,33 @@
             console.log(document.getElementById("datetime_picker").value)
             // fetch('/get_data_/date-time')
             // display on google maps
+        /**
+        * Plot the traffic conditions on the Google Maps.
+        * @param {list of dictionay} road_speed - [{'points': list of [lat, lon], 'speed': float, 'speed_ratio': float}]
+        * @return null
+        */
+        function plot_traffic_on_google_maps(road_speed) {
+            polylines = [];
+            for (var i = 0; i < road_speed.length; i++) {
+                const points = road_speed[i]['points'];
+                let coordinates = [];
+                for (let i = 0; i < points.length; i++) {
+                    coordinates.push({lat: points[i][0], lng: points[i][1]});
+                }
+                // const speed = road_speed[i]['speed'];
+                const speed_ratio = road_speed[i]['speed_ratio'];
+
+                const polyline = new google.maps.Polyline({
+                        path: coordinates,
+                        geodesic: true,
+                        strokeColor: get_color_based_on_speed(speed_ratio),
+                        strokeOpacity: 1.0,
+                        strokeWeight: 2,
+                });
+                polyline.setMap(map);
+                polylines.push(polyline);
+            }
+        }
         }
 
         function startTime() {
