@@ -1,6 +1,6 @@
 import json
 import pickle
-from helper.global_var import SAVE_TYPE_JSON, SAVE_TYPE_PICKLE
+from helper.global_var import SAVE_TYPE_JSON, SAVE_TYPE_PICKLE, FLAG_DEBUG
 
 
 def graph_reader(graph_path, save_type, save_filename_list):
@@ -31,10 +31,12 @@ def graph_reader(graph_path, save_type, save_filename_list):
             temp_filepath = graph_path / "{}.p".format(save_filename)
             with open(temp_filepath, 'rb') as f:
                 result_list.append(pickle.load(f))
-                print("{} loaded".format(temp_filepath))
+                if FLAG_DEBUG:
+                    print("{} loaded".format(temp_filepath))
         elif save_type == SAVE_TYPE_JSON:
             temp_filepath = graph_path / "{}.json".format(save_filename)
             with open(temp_filepath, 'r') as f:
                 result_list.append(json.load(f))
-                print("{} loaded".format(temp_filepath))
+                if FLAG_DEBUG:
+                    print("{} loaded".format(temp_filepath))
     return result_list
