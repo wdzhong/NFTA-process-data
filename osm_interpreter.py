@@ -197,19 +197,22 @@ def get_map_data(map_file, result_file_path, save_type):
     # Also we compute the average speed limit for each type of the road and store in the way_type_avg_speed_limit
     way_types = {}
     way_type_avg_speed_limit = {}
-    for key, value in way_graph_by_set.items():
-        if "highway" in way_tag_table[key]:
-            way_type = way_tag_table[key]["highway"]
-            way_types[key] = way_type
+    for way_id in final_way_table.keys():
+        if "highway" in way_tag_table[way_id]:
+            way_type = way_tag_table[way_id]["highway"]
+            way_types[way_id] = way_type
 
             if way_type not in way_type_avg_speed_limit:
                 way_type_avg_speed_limit[way_type] = []
 
-            if "maxspeed" in way_tag_table[key]:
-                re_result = re.search(r"\d*", way_tag_table[key]["maxspeed"])
+            if "maxspeed" in way_tag_table[way_id]:
+                re_result = re.search(r"\d*", way_tag_table[way_id]["maxspeed"])
                 if re_result is None:
                     continue
                 way_type_avg_speed_limit[way_type].append(int(re_result.group()))
+        else:
+            way_types[way_id] = "unclassified"
+
 
     # To simplify the result, we round the result to the nearest multiple of 5.
     for key, value in way_type_avg_speed_limit.items():
