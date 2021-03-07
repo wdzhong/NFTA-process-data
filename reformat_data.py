@@ -4,8 +4,10 @@ import shutil
 import sys
 from pathlib import Path
 
+from helper.global_var import CONFIG_ALL_DAY_RAW_DATA_FILE, CONFIG_SINGLE_DAY_FOLDER
 
-def reformat_by_bus(date):
+
+def reformat_by_bus(date_str):
     """
     This cell breaks a compiled dataset into each individual bus per day.
 
@@ -17,14 +19,16 @@ def reformat_by_bus(date):
 
     Parameters
     ----------
-    date: string
+    date_str: string
         8 digit number of the date. It should be a folder name in data
     """
-    Path('data/{}/unsorted/'.format(date)).mkdir(parents=True, exist_ok=True)
+    root = Path(CONFIG_SINGLE_DAY_FOLDER.format(date_str))
+    unsorted_dir = root / "unsorted"
+    unsorted_dir.mkdir(parents=True, exist_ok=True)
     output = {}
     csv_writers = {}
 
-    with open(Path("data/{}/{}.csv".format(date, date)), "r", newline='') as csv_file:
+    with open(CONFIG_ALL_DAY_RAW_DATA_FILE.format(date_str), "r", newline='') as csv_file:
         reader_csv_file = csv.reader(csv_file)
 
         for row in reader_csv_file:
@@ -33,7 +37,7 @@ def reformat_by_bus(date):
                 continue
 
             if bus_id not in output:
-                output[bus_id] = open(Path("data/{}/unsorted/{}.csv".format(date, bus_id)), 'w+', newline='')
+                output[bus_id] = open(unsorted_dir / "{}.csv".format(bus_id), 'w+', newline='')
                 csv_writers[bus_id] = csv.writer(output[bus_id])
 
             csv_writers[bus_id].writerow(row)
@@ -53,10 +57,10 @@ def sort_reformat_data(date):
     Parameters
     ----------
     date: string
-        8 digit number of the date. It should be a folder name in data
+        8 digit number of the date_str. It should be a folder name in data
     """
 
-    root = Path("data/{}".format(date))
+    root = Path(CONFIG_SINGLE_DAY_FOLDER.format(date))
     unsorted_dir = root / "unsorted"
     sorted_dir = root / "sorted"
     Path(sorted_dir).mkdir(parents=True, exist_ok=True)
@@ -78,14 +82,14 @@ def sort_reformat_data(date):
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage:")
-        print("reformat_data.py <date>")
+        print("reformat_data.py <date_str>")
         print("")
         print("Require:")
-        print("date       : 8 digit number of the date")
+        print("date_str       : 8 digit number of the date_str")
         print("             it is the folder name in data/")
         exit(0)
     date = sys.argv[1]
-    print(date)
+    # print(date_str)
     reformat_by_bus(date)
     sort_reformat_data(date)
     print("Done")
@@ -96,7 +100,7 @@ if __name__ == '__main__':
     # data_root = Path(".") / 'data'
     # for name in tqdm(os.listdir(data_root)):
     #     if re.match(r"^[0-9]{8}$", str(name)) is not None:
-    #         date = str(name)
-    #         # print(date)
-    #         reformat_by_bus(date)
-    #         sort_reformat_data(date)
+    #         date_str = str(name)
+    #         # print(date_str)
+    #         reformat_by_bus(date_str)
+    #         sort_reformat_data(date_str)
