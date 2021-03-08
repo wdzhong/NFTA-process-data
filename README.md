@@ -90,17 +90,28 @@ The bus might stop at some location for a long period
 ### To run it manually
 
 1. To start it, you need to put the GPS data in `data/yyyyMMdd/raw`. Example: `data/20200731/raw`.
-2. Run `process_data.py`. This file will process all the folder in `data` that is larger than `min_file_size`. By 
-   default, it is 10 byte. 
-   - `python3 process_data.py`
-3. Run `reformat_data.py` to reformat the data that processed by previous step. This will create `data/yyyyMMdd/sorted` 
-   and `data/yyyyMMdd/unsort`
-   - `python3 process_data.py 20200731`
-4. Run `osm_interperter.py` to convert OSM data to the format that this project is using. The file will be store in 
+
+2. Run `osm_interperter.py` to convert OSM data to the format that this project is using. The file will be store in 
    `graph/`
    - `python3 osm_interperter.py map/Buffalo_NFTA_BetterFit.osm.pbf`
-5. Run `find_traffic_speed.py` to generate the table mention [here](#first-stage)
-   - `python3 find_traffic_speed.py 20200731`
+  
+3. Next you could run `script/process_all_data.py` to process the data and get the speed matrix. An alternate script
+   called `script/process_yesterday_data.py` is also avaliable if just want to process the data for yesterday
+   - `python3 script/process_all_data.py`
+>The script in Step 3 do these following steps for you, here is how to run it step by step if needed
+> 
+> 1. Run `process_data.py`. This file will process all the folder in `data` that is larger than `min_file_size`. By 
+>   default, it is 10 byte. 
+>   - `python3 process_data.py`
+> 2. Run `reformat_data.py` to reformat the data that processed by previous step. This will create `data/yyyyMMdd/sorted` 
+>   and `data/yyyyMMdd/unsort`
+>   - `python3 process_data.py 20200731`
+> 3. Run `find_traffic_speed.py` to generate the speed matrix as mentioned [here](#first-stage)
+>   - `python3 find_traffic_speed.py 20200731`
+
+4. Once you have some data that could run prediction, run `predict_road_condition.py` to predict any time's road speed.
+   - `python3 predict_road_condition`
+
 
 ## Implementation Details by files
 
@@ -117,7 +128,7 @@ The used OSM data file (stored under folder `map/`) can be downloaded from [bbbi
 
 This file has the code to convert an osm file downloaded from openstreetmap and find all the NFTA routes and save their
 information in a dictionary. For debugging purposes, the NFTA roads that are found are also plotted. Using pickle or 
-JSON, 3 dictionaries and 1 list are saved in `graph/`
+JSON, 6 dictionaries and 1 list are saved in `graph/`
 
 - final_node_table
 
@@ -138,8 +149,18 @@ JSON, 3 dictionaries and 1 list are saved in `graph/`
 
 - relations
 
-  - relations is a list that contains the same information as final_relation_table, albeit in a less easily accessed 
+  - Relations is a list that contains the same information as final_relation_table, albeit in a less easily accessed 
     form of a list of 3-tuples.
+
+- way_graph
+    - A graph use way_id as the node of the graph and use [OSM's node] as the edge of the graph. Use adjacency list
+      to represent the graph.
+
+- way_type
+    - A dictionary that use way_id as key and the type of the way as the value
+
+- way_type_avg_speed_limit
+    - A dictionary that use way_type as key and the average speed limit of that type of way as the value
 
 ### find_nearest_road
 
@@ -169,7 +190,7 @@ After the `osm_interpreter.py` has been run at least once to generate the nodes,
 of the Buffalo region and `reformat_data.py` has been run on the data we wish to parse, we can execute the code in 
 `find_traffic_speed.py`.
 
-By default, we using 5 minute intervals, there are a total of 288 intervals that must be accounted for, so the final 
+By default, we are using 5 minutes intervals, there are a total of 288 intervals that must be accounted for, so the final 
 result is a dictionary. The keys are the way id's. The values are lists/arrays that have a length of 288, which is the 
 number of intervals if we have 5 minute intervals for a whole day. Accordingly, [0] is the 00:00 - 00:04 interval up 
 to [287], which is 23:55 - 23:59.
@@ -188,7 +209,25 @@ To make the results easier to read, we visualize the results on the map, right n
 generate by interval, or could generate by multiple interval's average. For debug purposes, 
 in OSM all road can be click to view more information.
 
+###predict_road_condition
+
+After `find_traffic_speed.py` generate enough history data, we can run `predict_road_condition.py` to predict any given
+time's whole Buffalo's road speed.
+
+`predict_road_condition.py` use data from multiple historical days, weighted and summed according to the weights 
+calculated in advance to estimate the bus speed on the current road. The weights and the exact historical days can be 
+config in `helper/global_var.py`.
+
+Due to the input data is relatively sparse, this function tries to make up for this in many places. The main way to 
+make up is to redistribute the weight to ignore a missing data. However, in some cases, there is no historical 
+data for a certain road in a certain period of time. At this time, we will use the speed of the road connected to the 
+road to infer the speed of the road section.
+
 ###helper/
 
 The global variable file and some helper function are in this folder. For more information about each file, please read
 the comment in the file.
+
+###script/
+
+Some useful script is here for doing some repeating work.
