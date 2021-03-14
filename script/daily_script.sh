@@ -2,3 +2,5 @@
 SHELL_FOLDER=$(dirname "$(readlink -f "$0")")
 cd "$SHELL_FOLDER/../"
 python3 "./script/process_yesterday_data.py"
+
+find logs/ -mtime +30 -name "*.log" -exec rm -rf {} \;
