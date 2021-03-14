@@ -282,12 +282,10 @@ def estimate_no_data_road_speed_using_BFS(predict_speed_dict, way_graph, way_typ
                         temp_sample.append(neighbor_speed)
                     elif bfs_current_node_motorway:
                         # Some test shows that the the bus run 4~5 times faster on motorway then normal road.
-                        temp_sample.append(4.5 * neighbor_speed)
+                        temp_sample.append(4 * neighbor_speed)
+            temp_sample.append(way_type_avg_speed_limit[way_types.get(bfs_current_node, "unclassified")])
             if len(temp_sample) > 0:
                 predict_speed_dict[bfs_current_node] = sum(temp_sample) / len(temp_sample)
-            else:
-                predict_speed_dict[bfs_current_node] = \
-                    way_type_avg_speed_limit[way_types.get(bfs_current_node, "unclassified")]
 
         for neighbor in way_graph[bfs_current_node]:
             if neighbor not in bfs_explored:
