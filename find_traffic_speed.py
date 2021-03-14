@@ -56,7 +56,7 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
 
     max_index = int(1440 / time_slot_interval)
 
-    data_directory = Path(CONFIG_SINGLE_DAY_FOLDER.format(date_str)) / "raw"
+    data_directory = Path(CONFIG_SINGLE_DAY_FOLDER.format(date_str)) / "sorted"
     output_path = Path(CONFIG_SINGLE_DAY_RESULT_FILE.format(date_str, time_slot_interval))
 
     # This data structures will have the final result.
@@ -158,7 +158,7 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
 
             if len(possible_relations1) <= 0:
                 if FLAG_DEBUG:
-                    print("No possible_relations found in {}, line {}".format(filename, i))
+                    print("No possible_relations found in {}, route_id {}, line {}".format(filename,route_id1, i))
                 continue
 
             projection1, way1 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
@@ -259,10 +259,12 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
         debug_prof_count[1] += end_time - start_time
         debug_prof_count[2] += 1
         # print(filename)
-    print("All %d file processed, total %d lines, use %.2fs, %.4f/100lines" % (
-        debug_prof_count[2], debug_prof_count[0], debug_prof_count[1],
-        (debug_prof_count[1] * 100) / debug_prof_count[0]))
-
+    if FLAG_DEBUG and debug_prof_count[0] != 0:
+        print("All %d file processed, total %d lines, use %.2fs, %.4f/100lines" % (
+            debug_prof_count[2], debug_prof_count[0], debug_prof_count[1],
+            (debug_prof_count[1] * 100) / debug_prof_count[0]))
+    else:
+        print("All {} file processed".format(debug_prof_count[2]))
     for way, speed_samples in meta_speeds.items():
         # speed_intervals = []
         for i in range(len(speed_samples)):
@@ -285,7 +287,7 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
     with open(output_path.with_suffix('.p'), 'wb') as f:
         pickle.dump(road_speeds, f)
 
-    if FLAG_DEBUG:
+    if FLAG_DEBUG and debug_prof_count[0] != 0:
         print("Generating map...")
         show_traffic_speed(final_way_table, final_node_table, road_speeds, -1, -1, time_slot_interval, "OSM")
         # for i in tqdm(range(0, 288, 12)):

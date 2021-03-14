@@ -209,7 +209,7 @@ def show_traffic_speed_OSM(final_way_table, final_node_table, road_speeds, time_
 
         if len(points) != 0:
             folium.PolyLine(points,
-                            popup=map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_speed),
+                            popup=map_popup_generate(road_speed, sample_speed, sample_time),
                             tooltip="Avg. speed: {:.2f}".format(road_speed), color=line_color).add_to(m)
 
     time_range_str = time_range_index_to_time_range_str(time_range_start_index, time_range_end_index, "")

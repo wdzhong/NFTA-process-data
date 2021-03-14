@@ -84,7 +84,7 @@ def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path,
         if os.stat(data_path).st_size <= min_file_size:
             small_file_count += 1
             continue
-        data = load_data_file(data_root / data_filename, columns)
+        data = load_data_file(data_path, columns)
         all_data.append(data)
 
     if small_file_count > 0:
@@ -143,9 +143,9 @@ def preprocess_data(date_str: str, overwrite: bool = False, min_file_size: int =
                'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num',
                'off route', 'run_id']
 
-    full_path = global_var.CONFIG_RAW_DATA_FOLDER.format(date_str)
+    full_path = Path(global_var.CONFIG_RAW_DATA_FOLDER.format(date_str))
     if full_path.is_dir():
-        merged_file = global_var.CONFIG_ALL_DAY_RAW_DATA_FILE.format(date_str)
+        merged_file = Path(global_var.CONFIG_ALL_DAY_RAW_DATA_FILE.format(date_str))
         if not merged_file.is_file() or overwrite:
             merge_data_files(columns, full_path, merged_file, min_file_size)
         else:
@@ -223,4 +223,4 @@ if __name__ == "__main__":
     date = sys.argv[1]
     print(date)
     preprocess_data(date, overwrite=True, min_file_size=10)
-    data_statistic()
+    # data_statistic()
