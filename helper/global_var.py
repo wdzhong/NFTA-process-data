@@ -8,6 +8,11 @@ FLAG_FIND_NEAREST_ROAD_DEBUG = False
 GOOGLE_MAPS_API_KEY = ""
 
 # File path setting
+
+# Unless otherwise stated,
+# {0} represent date_str: 8 digit number of the date_str in yyyyMMdd format (e.g. 20200731)
+# {1} represent interval: The length of each time interval in minutes. The input number should be divisible by 1440
+#                         (24 hour * 60 min) by default it is 5 min
 CONFIG_DATA_FOLDER = "data/"
 CONFIG_SINGLE_DAY_FOLDER = "data/{0}"
 CONFIG_ALL_DAY_RAW_DATA_FILE = "data/{0}/{0}.csv"
