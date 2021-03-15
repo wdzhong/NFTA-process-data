@@ -28,12 +28,16 @@ def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
 
     data = pd.read_csv(data_path, sep=',', header=None)
 
-    assert len(columns) == data.shape[1] - 1, f"{data_path}'s columns are unexpected"
-    data = data.drop(columns=data.columns[-1])  # data = data.drop(data.columns[-1], axis=1)
+    # assert len(columns) == data.shape[1] - 1, f"{data_path}'s columns are unexpected"
+    data = data.dropna(how="all", axis=1)
+
+    if len(columns) < data.shape[1]:
+        for i in range(data.shape[1]- len(columns)):
+            columns.append("unknown_columns_{}".format(i))
 
     data.columns = columns
 
-    # remove lines with 8000 <= vehicle_id < 9000, these vehicle are paratransit vehicle
+    # remove lines with 8000 <= vehicle_id < 9000, these vehicles are paratransit vehicle
     data = data[(data.vehicle_id < 8000) | (data.vehicle_id >= 9000)]
 
     # remove lines with route_id_curr == 0
@@ -75,11 +79,12 @@ def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path,
     """
     # print(f"\nstart merging data under {data_root}")
     # print("loading...")
+    data_root = Path(data_root)
     all_data = []
     small_file_count = 0
     for data_filename in tqdm(sorted(os.listdir(data_root)), desc="Merging {}".format(data_root), unit="file",
                               position=1):
-        data_path = os.path.join(data_root, data_filename)
+        data_path = data_root / data_filename
         # the file might be empty, if so, ignore it
         if os.stat(data_path).st_size <= min_file_size:
             small_file_count += 1
