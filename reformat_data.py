@@ -63,6 +63,8 @@ def sort_reformat_data(date):
     root = Path(CONFIG_SINGLE_DAY_FOLDER.format(date))
     unsorted_dir = root / "unsorted"
     sorted_dir = root / "sorted"
+    if os.path.exists(sorted_dir):
+        shutil.rmtree(sorted_dir)
     Path(sorted_dir).mkdir(parents=True, exist_ok=True)
 
     for filename in os.listdir(unsorted_dir):
