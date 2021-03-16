@@ -29,13 +29,12 @@ def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
     data = pd.read_csv(data_path, sep=',', header=None)
 
     # assert len(columns) == data.shape[1] - 1, f"{data_path}'s columns are unexpected"
-    data = data.dropna(how="all", axis=1)
 
     if len(columns) < data.shape[1]:
-        for i in range(data.shape[1]- len(columns)):
+        for i in range(data.shape[1] - len(columns)):
             columns.append("unknown_columns_{}".format(i))
-
     data.columns = columns
+    data = data.drop(columns='empty_columns')
 
     # remove lines with 8000 <= vehicle_id < 9000, these vehicles are paratransit vehicle
     data = data[(data.vehicle_id < 8000) | (data.vehicle_id >= 9000)]
@@ -146,7 +145,7 @@ def preprocess_data(date_str: str, overwrite: bool = False, min_file_size: int =
 
     columns = ['vehicle_id', 'route_id_curr', 'direction', 'block_id', 'service_type', 'deviation', 'next_tp_est',
                'next_tp_sname', 'next_tp_sched', 'X', 'Y', 'location time', 'route logon id', 'block_num',
-               'off route', 'run_id']
+               'off route', 'run_id', 'empty_columns']
 
     full_path = Path(global_var.CONFIG_RAW_DATA_FOLDER.format(date_str))
     if full_path.is_dir():
