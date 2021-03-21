@@ -23,7 +23,7 @@ if __name__ == '__main__':
     final_way_table = map_dates[1]
     final_relation_table = map_dates[2]
 
-    find_traffic_speed.find_traffic_speed(date_str, final_node_table, final_way_table, final_relation_table,
-                                          time_slot_interval=5)
-    find_traffic_speed.find_traffic_speed(date_str, final_node_table, final_way_table, final_relation_table,
-                                          time_slot_interval=15)
+    time_slot_intervals = [5, 15]
+    for interval in time_slot_intervals:
+        find_traffic_speed.find_traffic_speed(date_str, final_node_table, final_way_table, final_relation_table,
+                                              time_slot_interval=interval)
