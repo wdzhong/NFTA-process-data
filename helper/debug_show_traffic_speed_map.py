@@ -9,23 +9,31 @@ import gmplot
 
 def get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index, road_speed_time_range_end_index,
                            time_slot_interval):
-    """TODO
+    """
+
+    Collect all the non-zero data and compute the average as the road's speed
 
     Parameters
     ----------
-    single_road_speed : [type]
-        [description]
-    road_speed_time_range_start_index : [type]
-        [description]
-    road_speed_time_range_end_index : [type]
-        [description]
-    time_slot_interval : [type]
-        [description]
+    single_road_speed : list of float
+        one row of the [speed matrix]
+    road_speed_time_range_start_index : int
+        The index of the start of the time range
+    road_speed_time_range_end_index : int
+        The index of the end of the time range (include the end time range)
+    time_slot_interval : int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min
 
     Returns
     -------
-    [type]
-        [description]
+    road_speed : float
+        Average speed of the given road at given interval
+    sample_speed : list of float
+        Non-zero data that use to compute road_speed
+    sample_time : list of float
+        The corresponding time of the sample in sample_speed
+
     """
     sample_speed = []
     sample_time = []
@@ -46,41 +54,35 @@ def get_traffic_speed_data(single_road_speed, road_speed_time_range_start_index,
                 sample_speed.append(single_road_speed[index])
                 sample_time.append(time_range_index_to_str(index, time_slot_interval))
 
-    max_speed = 0
-    min_speed = 9999
-    for i in sample_speed:
-        if i <= min_speed:
-            min_speed = i
-        if i >= max_speed:
-            max_speed = i
-
-    return road_speed, sample_speed, sample_time, max_speed, min_speed
+    return road_speed, sample_speed, sample_time
 
 
-def get_traffic_speed_color(road_speed, road_type_speed_limit):
-    """TODO
+def get_traffic_speed_color(road_speed, speed_limit):
+    """
+
+    Output the color based on the speed and road speed limit
 
     Parameters
     ----------
-    road_speed : [type]
-        [description]
-    road_type_speed_limit : [type]
-        [description]
+    road_speed : float
+        Average speed of the road
+    speed_limit : int or float
+        The speed limit of the road
 
     Returns
     -------
-    [type]
-        [description]
+    String
+        representing color in color hex triplet
     """
     # Consider NYC bus has average speed ~7 mph, and the average road speed limit in buffalo is around 30.
     # So we assume any bus that run faster then 0.2 * speed_limit is a "normal" speed, and the road has a good condition
-    if road_type_speed_limit <= 0:
-        road_type_speed_limit = 30
-    if road_speed >= 0.2 * road_type_speed_limit:
+    if speed_limit <= 0:
+        speed_limit = 30
+    if road_speed >= 0.2 * speed_limit:
         color = "#84ca50"  # Green
-    elif road_speed >= 0.1 * road_type_speed_limit:
+    elif road_speed >= 0.1 * speed_limit:
         color = "#f07d02"  # Yellow
-    elif road_speed >= 0.05 * road_type_speed_limit:
+    elif road_speed >= 0.05 * speed_limit:
         color = "#e60000"  # Red
     elif road_speed <= 0:
         color = "#a9acb8"  # Gray
@@ -89,33 +91,30 @@ def get_traffic_speed_color(road_speed, road_type_speed_limit):
     return color
 
 
-def map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_speed):
-    """TODO
+def map_popup_generate(road_speed, sample_speed, sample_time):
+    """
+    Helper function generate OSM map popup
 
     Parameters
     ----------
-    road_speed : [type]
-        [description]
-    sample_speed : [type]
-        [description]
-    sample_time : [type]
-        [description]
-    max_speed : [type]
-        [description]
-    min_speed : [type]
-        [description]
+    road_speed : float
+        current road speed
+    sample_speed : list of float
+        The data that use to compute road_speed (more information can be found in get_traffic_speed_data
+    sample_time : list of float
+        The corresponding time of the sample in sample_speed
 
     Returns
     -------
-    [type]
-        [description]
+    String
+        HTML string for the popup page
     """
     if road_speed != 0:
         sample_text = ""
         for temp_speed, temp_time in zip(sample_speed, sample_time):
             sample_text = sample_text + "<td>{}</td><td>{:.2f}</td></tr><tr>".format(temp_time, temp_speed)
         html = '''Avg. speed: {:.2f}<br>Max speed: {:.2f}<br>Min speed: {:.2f}<br>
-        Detail:<table border="1"><tr>{}</tr></table>'''.format(road_speed, max_speed, min_speed, sample_text)
+        Detail:<table border="1"><tr>{}</tr></table>'''.format(road_speed, max(sample_speed), min(sample_speed), sample_text)
     else:
         html = "No data"
     iframe = folium.IFrame(html, width=500, height=600)
@@ -124,30 +123,30 @@ def map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_spe
 
 
 def show_traffic_speed(final_way_table, final_node_table, road_speeds, time_range_start_index,
-                       time_range_end_index, time_slot_interval, map_type="GoogleMap"):
-    """TODO
+                       time_range_end_index, time_slot_interval, map_type="OSM"):
+    """
 
     Parameters
     ----------
-    final_way_table : [type]
-        [description]
-    final_node_table : [type]
-        [description]
-    road_speeds : [type]
-        [description]
-    time_range_start_index : [type]
-        [description]
-    time_range_end_index : [type]
-        [description]
-    time_slot_interval : [type]
-        [description]
+    final_node_table: Dictionary
+        A dictionary that stored the node id and the latitude/longitude coordinates as a key value pair.
+    final_way_table: Dictionary
+        A dictionary that stored the way id and a list of node id's as a key value pair.
+    road_speeds : Dictionary
+        A dictionay that stored the [speed matrix] use way id as key and use list to store each row
+    time_range_start_index : int
+        The index of the start of the time range
+    time_range_end_index : int
+        The index of the end of the time range (include the end time range)
+    time_slot_interval : int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min
     map_type : str, optional
-        [description], by default "GoogleMap"
+        The map platform of the generate map. Could be GoogleMap or OSM, by default "OSM"
 
     Returns
     -------
-    [type]
-        [description]
+    None
     """
     save_filename_list = ["way_types", "way_type_avg_speed_limit"]
     temp_map_dates = graph_reader(Path("graph/"), SAVE_TYPE_PICKLE, save_filename_list)
@@ -168,36 +167,37 @@ def show_traffic_speed(final_way_table, final_node_table, road_speeds, time_rang
 
 def show_traffic_speed_OSM(final_way_table, final_node_table, road_speeds, time_range_start_index,
                            time_range_end_index, time_slot_interval, way_types, way_type_avg_speed_limit):
-    """TODO
+    """
 
     Parameters
     ----------
-    final_way_table : [type]
-        [description]
-    final_node_table : [type]
-        [description]
-    road_speeds : [type]
-        [description]
-    time_range_start_index : [type]
-        [description]
-    time_range_end_index : [type]
-        [description]
-    time_slot_interval : [type]
-        [description]
-    way_types : [type]
-        [description]
-    way_type_avg_speed_limit : [type]
-        [description]
+    final_node_table: Dictionary
+        A dictionary that stored the node id and the latitude/longitude coordinates as a key value pair.
+    final_way_table: Dictionary
+        A dictionary that stored the way id and a list of node id's as a key value pair.
+    road_speeds : Dictionary
+        A dictionay that stored the [speed matrix] use way id as key and use list to store each row
+    time_range_start_index : int
+        The index of the start of the time range
+    time_range_end_index : int
+        The index of the end of the time range (include the end time range)
+    time_slot_interval : int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min
+    way_types : Dictionary
+        A dictionary that stored the way id and the type of the way as a key value pair.
+    way_type_avg_speed_limit : Dictionary
+        A dictionary that stored the way type and the average speed limit of that type as a key value pair.
 
     Returns
     -------
-    [type]
-        [description]
+    String
+        The url to the map that generated
     """
     m = folium.Map(location=[42.89, -78.74], tiles="OpenStreetMap", zoom_start=10)
 
     for way, single_road_speed in road_speeds.items():
-        road_speed, sample_speed, sample_time, max_speed, min_speed = \
+        road_speed, sample_speed, sample_time = \
             get_traffic_speed_data(single_road_speed, time_range_start_index, time_range_end_index,
                                    time_slot_interval)
         line_color = get_traffic_speed_color(road_speed,
@@ -209,7 +209,7 @@ def show_traffic_speed_OSM(final_way_table, final_node_table, road_speeds, time_
 
         if len(points) != 0:
             folium.PolyLine(points,
-                            popup=map_popup_generate(road_speed, sample_speed, sample_time, max_speed, min_speed),
+                            popup=map_popup_generate(road_speed, sample_speed, sample_time),
                             tooltip="Avg. speed: {:.2f}".format(road_speed), color=line_color).add_to(m)
 
     time_range_str = time_range_index_to_time_range_str(time_range_start_index, time_range_end_index, "")
@@ -224,43 +224,40 @@ def show_traffic_speed_OSM(final_way_table, final_node_table, road_speeds, time_
 
 def show_traffic_speed_googlemap(final_way_table, final_node_table, road_speeds, time_range_start_index,
                                  time_range_end_index, time_slot_interval, way_types, way_type_avg_speed_limit):
-    """TODO
+    """
 
     Parameters
     ----------
-    final_way_table : [type]
-        [description]
-    final_node_table : [type]
-        [description]
-    road_speeds : [type]
-        [description]
-    time_range_start_index : [type]
-        [description]
-    time_range_end_index : [type]
-        [description]
-    time_slot_interval : [type]
-        [description]
-    way_types : [type]
-        [description]
-    way_type_avg_speed_limit : [type]
-        [description]
+    final_node_table: Dictionary
+        A dictionary that stored the node id and the latitude/longitude coordinates as a key value pair.
+    final_way_table: Dictionary
+        A dictionary that stored the way id and a list of node id's as a key value pair.
+    road_speeds : Dictionary
+        A dictionay that stored the [speed matrix] use way id as key and use list to store each row
+    time_range_start_index : int
+        The index of the start of the time range
+    time_range_end_index : int
+        The index of the end of the time range (include the end time range)
+    time_slot_interval : int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min
+    way_types : Dictionary
+        A dictionary that stored the way id and the type of the way as a key value pair.
+    way_type_avg_speed_limit : Dictionary
+        A dictionary that stored the way type and the average speed limit of that type as a key value pair.
 
     Returns
     -------
-    [type]
-        [description]
+    String
+        The url to the map that generated
 
-    Raises
-    ------
-    RuntimeError
-        [description]
     """
     if GOOGLE_MAPS_API_KEY == "":
-        raise RuntimeError('Cant find GOOGLE_MAPS_API_KEY, please check helper/globle_var.py')
+        raise RuntimeError('Cant find GOOGLE_MAPS_API_KEY, please check helper/global_var.py')
     gmap = gmplot.GoogleMapPlotter(42.89, -78.74, 10, apikey=GOOGLE_MAPS_API_KEY)
 
     for way, single_road_speed in road_speeds.items():
-        road_speed, sample_speed, sample_time, max_speed, min_speed = \
+        road_speed, sample_speed, sample_time = \
             get_traffic_speed_data(single_road_speed, time_range_start_index, time_range_end_index,
                                    time_slot_interval)
         line_color = get_traffic_speed_color(road_speed,

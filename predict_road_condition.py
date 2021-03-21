@@ -4,21 +4,22 @@ import os
 import queue
 import sys
 import time
-from helper.global_var import FLAG_DEBUG, SAVE_TYPE_PICKLE
+from helper.global_var import FLAG_DEBUG, SAVE_TYPE_PICKLE, PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE, \
+    PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE, PREDICT_ROAD_CONDITION_CONFIG_WEIGHT
 from helper.graph_reader import graph_reader
 from datetime import datetime, timedelta
 from pathlib import Path
 from helper.debug_predict_road_condition_map import show_traffic_speed
 
 
-def read_speed_matrix_from_file(date_str, interval=5, result_file_path="data/{0}/result/{0}_{1}_min_road.csv"):
+def read_speed_matrix_from_file(date_str, interval, result_file_path):
     """
     This function will read the csv file and return a speed matrix.
 
     Parameters
     ----------
     date_str: string
-        8-digit string represent the date using yyyyMMdd format e.g. 20200801
+        8-digit string represent the date_str using yyyyMMdd format e.g. 20200801
 
     interval: int
         The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
@@ -149,7 +150,7 @@ def get_history_speed_matrix_list(history_data_date_str, config_weight, interval
     ----------
     history_data_date_str: List of string
         List of date_str that represent the historical days that need to be load.
-        date_str: 8-digit string represent the date using yyyyMMdd format e.g. 20200801
+        date_str: 8-digit string represent the date_str using yyyyMMdd format e.g. 20200801
 
     config_weight: List of float
         This parameter specifies the weight of each day's data when compute the weighted sum.
@@ -179,7 +180,7 @@ def get_history_speed_matrix_list(history_data_date_str, config_weight, interval
         date_str = history_data_date_str[i]
         temp_filepath = Path(result_file_path.format(date_str, interval))
         if os.path.exists(temp_filepath):
-            history_speed_matrix_list.append(read_speed_matrix_from_file(date_str))
+            history_speed_matrix_list.append(read_speed_matrix_from_file(date_str, interval, result_file_path))
         else:
             history_data_missing_idx_list.append(i)
             if FLAG_DEBUG:
@@ -251,6 +252,13 @@ def estimate_no_data_road_speed_using_BFS(predict_speed_dict, way_graph, way_typ
         if speed > 0:
             bfs_start_way = way
             break
+    
+    if bfs_start_way == 0:
+        if FLAG_DEBUG:
+            print("No data at all, assume all roads have good condition.")
+        for way, speed in predict_speed_dict.items():
+            predict_speed_dict[way] = way_type_avg_speed_limit.get(way_types.get(way, "unclassified"), 30)
+        return predict_speed_dict
 
     way_motorway = {}
     for way, way_type in way_types.items():
@@ -274,12 +282,10 @@ def estimate_no_data_road_speed_using_BFS(predict_speed_dict, way_graph, way_typ
                         temp_sample.append(neighbor_speed)
                     elif bfs_current_node_motorway:
                         # Some test shows that the the bus run 4~5 times faster on motorway then normal road.
-                        temp_sample.append(4.5 * neighbor_speed)
+                        temp_sample.append(4 * neighbor_speed)
+            temp_sample.append(way_type_avg_speed_limit[way_types.get(bfs_current_node, "unclassified")])
             if len(temp_sample) > 0:
                 predict_speed_dict[bfs_current_node] = sum(temp_sample) / len(temp_sample)
-            else:
-                predict_speed_dict[bfs_current_node] = \
-                    way_type_avg_speed_limit[way_types.get(bfs_current_node, "unclassified")]
 
         for neighbor in way_graph[bfs_current_node]:
             if neighbor not in bfs_explored:
@@ -289,32 +295,30 @@ def estimate_no_data_road_speed_using_BFS(predict_speed_dict, way_graph, way_typ
     return predict_speed_dict
 
 
-def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), interval=5,
-                           result_file_path="data/{0}/result/{0}_{1}_min_road.csv",
-                           config_history_date=None, config_history_data_range=None, config_weight=None,):
+def compute_speed_dict(interval, interval_idx, history_speed_matrix_list, full_way_id_set, usable_way_id_set,
+                       config_history_data_range, config_weight, way_graph, way_types,
+                       way_type_avg_speed_limit):
     """
-    This function will reading historical data and using weighted sum calculate the bus speed on the road at the
-    given time.
+    This function is part of the predict_road_condition function. This function will reading historical data and using
+    weighted sum calculate the bus speed on the road at the given interval_idx.
 
     Parameters
     ----------
-    predict_timestamp: timestamp
-        10-digit timestamp, use current time if not provided
-
     interval: int
         The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
         by default it is 5 min.
 
-    result_file_path: String
-        The path (also the format) to the result csv files.
-        {0} is a 8-digit date in yyyyMMdd format.
-        {1} is the value of interval
-        by default it will use the project's file format.
+    interval_idx: Int
+        The index of the period of the predict_timestamp in predict_road_condition
 
-    config_history_date: List of int
-        This parameter specifies which historical days of data the function needs to use in the computation. It should
-        be a List of int, where each int means the offset of the day that need predict. e.g. -1 means yesterday
-        by default it will use a predetermined configuration
+    history_speed_matrix_list: List of speed matrix
+        List of speed matrix
+
+    full_way_id_set: Set of way_id
+        A set that contain all way that exist in history_speed_matrix_list.
+
+    usable_way_id_set: Set of way_id
+        A set that only contain the way that exist in all speed matrix in history_speed_matrix_list.
 
     config_history_data_range: List of int
         This parameter specifies the range and the order of using the nearby data to replace the missing data. If the
@@ -326,61 +330,24 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
         This parameter specifies the weight of each day's data when compute the weighted sum.
         by default it will use a predetermined configuration
 
+    way_graph: Graph (Dictionary)
+        A graph use way_id as the node of the graph and use [OSM's node] as the edge of the graph. Use adjacency list
+        to represent the graph.
+
+    way_types: Dictionary
+        A dictionary that use way_id as key and the type of the way as the value
+
+    way_type_avg_speed_limit: Dictionary
+        A dictionary that use way_type as key and the average speed limit of that type of way as the value
+
     Returns
     -------
+    predict_speed_dict: Dictionary
     A dictionary that use way_id as key and the predict bus speed on that road at the given time as value.
     When there is an error, it will return a dictionary with key "Error" and the detail of the error as the value
-
     """
-    # TODO: This function could be implemented using pandas and numpy (Shiluo)
-    # Check input, load data and preparation
-    if config_history_date is None:
-        config_history_date = [-1, -2, -3, -7, -14, -21, -28, -35, -42, -49, -56, -63, -70]
-    if config_history_data_range is None:
-        config_history_data_range = [-1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6]
-    if config_weight is None:
-        config_weight = [0.08821194073566006, 0.08402736745847723, 0.09180261375018595, 0.09567173256541667,
-                         0.06638586102785468, 0.057538022745280304, 0.03803083890311526, 0.08628806480829161,
-                         0.08805171256460817, 0.08184255395533459, 0.07774612670061147, 0.06883249115674404,
-                         0.06392337112461549]
-    if len(config_history_date) != len(config_weight):
-        return -1
-
-    save_filename_list = ["way_graph", "way_types", "way_type_avg_speed_limit"]
-    temp_map_dates = graph_reader(Path("graph/"), SAVE_TYPE_PICKLE, save_filename_list)
-    way_graph = temp_map_dates[0]
-    way_types = temp_map_dates[1]
-    way_type_avg_speed_limit = temp_map_dates[2]
-
     predict_speed_dict = {}
-
-    # Find the time of the predict, also find the range index in the day.
-    predict_time = datetime.fromtimestamp(predict_timestamp)
-    # predict_time_date_str = predict_time.strftime("%Y%m%d")
-    interval_idx = math.floor((predict_time.hour * 3600 + predict_time.minute * 60 + predict_time.second) /
-                              (interval * 60))
-
-    # Prepare of load history data
-    history_data_date_str = []
-    for offset in config_history_date:
-        history_data_date_str.append((predict_time + timedelta(days=offset)).strftime("%Y%m%d"))
-
-    if FLAG_DEBUG:
-        print("Predict time: {}".format(predict_time.strftime("%Y-%m-%d %H:%M:%S")))
-        print("History data date:{}".format(history_data_date_str))
-
-    # Load history data
-    history_speed_matrix_list, config_weight = get_history_speed_matrix_list(history_data_date_str, config_weight,
-                                                                             interval, result_file_path)
-
-    if len(history_speed_matrix_list) == 0:
-        return {"Error": "No enough data for predict"}
-
-    if FLAG_DEBUG:
-        print("{} day(s) load".format(len(history_speed_matrix_list)))
-
-    full_way_id_set, usable_way_id_set = get_way_id_set(history_speed_matrix_list)
-
+    max_idx = int(1440 / interval)
     # iterate every way that all speed_matrix has
     for way_id in usable_way_id_set:
         temp_history_speed = []
@@ -391,7 +358,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
 
                 # Use near by data as the data for the target time
                 for i in config_history_data_range:
-                    temp_speed = speed_matrix[way_id][interval_idx + i]
+                    temp_speed = speed_matrix[way_id][(interval_idx + i) % 96]
                     if temp_speed > 0:
                         break
 
@@ -435,6 +402,97 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
     predict_speed_dict = estimate_no_data_road_speed_using_BFS(predict_speed_dict, way_graph, way_types,
                                                                way_type_avg_speed_limit)
 
+    return predict_speed_dict
+
+
+def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), interval=5,
+                           result_file_path="data/{0}/result/{0}_{1}_min_road.csv",
+                           config_history_date=PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE,
+                           config_history_data_range=PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE,
+                           config_weight=PREDICT_ROAD_CONDITION_CONFIG_WEIGHT):
+    """
+    This function will reading historical data and using weighted sum calculate the bus speed on the road at the
+    given time.
+
+    Parameters
+    ----------
+    predict_timestamp: timestamp
+        10-digit timestamp, use current time if not provided
+
+    interval: int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min.
+
+    result_file_path: String
+        The path (also the format) to the result csv files.
+        {0} is a 8-digit date_str in yyyyMMdd format.
+        {1} is the value of interval
+        by default it will use the project's file format.
+
+    config_history_date: List of int
+        This parameter specifies which historical days of data the function needs to use in the computation. It should
+        be a List of int, where each int means the offset of the day that need predict. e.g. -1 means yesterday
+        by default it will use a predetermined configuration
+
+    config_history_data_range: List of int
+        This parameter specifies the range and the order of using the nearby data to replace the missing data. If the
+        value is [-1, 1] and if the data we are looking for located on the ith index is missing. We will try to use the
+        value at i-1 or i+1 as the data located in ith index.
+        by default it will use a predetermined configuration
+
+    config_weight: List of float
+        This parameter specifies the weight of each day's data when compute the weighted sum.
+        by default it will use a predetermined configuration
+
+    Returns
+    -------
+    predict_speed_dict: Dictionary
+    A dictionary that use way_id as key and the predict bus speed on that road at the given time as value.
+    When there is an error, it will return a dictionary with key "Error" and the detail of the error as the value
+
+    """
+    # TODO: This function could be implemented using pandas and numpy (Shiluo)
+    # Check input, load data and preparation
+    if len(config_history_date) != len(config_weight):
+        return -1
+
+    save_filename_list = ["way_graph", "way_types", "way_type_avg_speed_limit"]
+    temp_map_dates = graph_reader(Path("graph/"), SAVE_TYPE_PICKLE, save_filename_list)
+    way_graph = temp_map_dates[0]
+    way_types = temp_map_dates[1]
+    way_type_avg_speed_limit = temp_map_dates[2]
+
+    # Find the time of the predict, also find the range index in the day.
+    predict_time = datetime.fromtimestamp(predict_timestamp)
+    # predict_time_date_str = predict_time.strftime("%Y%m%d")
+    interval_idx = math.floor((predict_time.hour * 3600 + predict_time.minute * 60 + predict_time.second) /
+                              (interval * 60))
+
+    # Prepare of load history data
+    history_data_date_str = []
+    for offset in config_history_date:
+        history_data_date_str.append((predict_time + timedelta(days=offset)).strftime("%Y%m%d"))
+
+    if FLAG_DEBUG:
+        print("Predict time: {}".format(predict_time.strftime("%Y-%m-%d %H:%M:%S")))
+        print("History data date_str:{}".format(history_data_date_str))
+
+    # Load history data
+    history_speed_matrix_list, config_weight = get_history_speed_matrix_list(history_data_date_str, config_weight,
+                                                                             interval, result_file_path)
+
+    if len(history_speed_matrix_list) == 0:
+        return {"Error": "No enough data for predict"}
+
+    if FLAG_DEBUG:
+        print("{} day(s) load".format(len(history_speed_matrix_list)))
+
+    full_way_id_set, usable_way_id_set = get_way_id_set(history_speed_matrix_list)
+
+    predict_speed_dict = compute_speed_dict(interval, interval_idx, history_speed_matrix_list, full_way_id_set,
+                                            usable_way_id_set, config_history_data_range, config_weight,
+                                            way_graph, way_types, way_type_avg_speed_limit)
+
     if FLAG_DEBUG:
         print(show_traffic_speed(predict_speed_dict, predict_timestamp))
         # print(predict_speed_dict)
@@ -450,7 +508,10 @@ if __name__ == '__main__':
         print("Optional:")
         print("timestamp  : 10-digit timestamp, use current time if not provided")
         exit(0)
-    timestamp = int(sys.argv[1])
+    if len(sys.argv) >= 2:
+        timestamp = int(sys.argv[1])
+    else:
+        timestamp = int(datetime.now().timestamp())
     start = time.process_time()
     predict_road_condition(timestamp)
     if FLAG_DEBUG:

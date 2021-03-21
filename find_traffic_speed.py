@@ -1,26 +1,30 @@
 import csv
+import pickle
 import time
 import os
 import sys
 import re
 import math
-
 from helper.debug_show_traffic_speed_map import show_traffic_speed
 from helper.helper_time_range_index_to_str import time_range_index_to_time_range_str
-from helper.global_var import FLAG_DEBUG, SAVE_TYPE_JSON, SAVE_TYPE_PICKLE
+from helper.global_var import FLAG_DEBUG, SAVE_TYPE_JSON, SAVE_TYPE_PICKLE, CONFIG_SINGLE_DAY_FOLDER, \
+    CONFIG_SINGLE_DAY_RESULT_FILE
 from find_nearest_road import find_nearest_road, distance
 from helper.graph_reader import graph_reader
 from pathlib import Path
 from tqdm import tqdm
 
 
-def find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path,
-                       time_slot_interval=5, map_type="OSM"):
+def find_traffic_speed(date_str, final_node_table, final_way_table, final_relation_table,
+                       time_slot_interval=5):
     """
     Get the road speed matrix
 
     Parameters
     ----------
+    date_str: string
+        8 digit number of the date_str in yyyyMMdd format (e.g. 20200731)
+
     final_node_table: Dict
         A dictionary that stored the node id and the latitude/longitude coordinates as a key value pair.
 
@@ -34,12 +38,6 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         endpoint of a road. The tags are useful because they possess information on the route like its name and what
         type of vehicle traverse the route (e.g. bus).
 
-    data_directory: String
-        The path of where the sorted data store
-
-    output_path: String
-        The path of where the road speed matrix output. It should be a csv file.
-
     time_slot_interval: Int
         The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
         by default it is 5 min
@@ -49,6 +47,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
     road_speeds: Map of [Int to [List of Int]]
         The lat and lng of the projection point from given point to the nearest road
     """
+
     time_slot_interval = int(time_slot_interval)
     if time_slot_interval <= 0 or time_slot_interval > 1440:
         raise RuntimeError('interval should be between (0, 1440]')
@@ -57,8 +56,10 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
 
     max_index = int(1440 / time_slot_interval)
 
+    data_directory = Path(CONFIG_SINGLE_DAY_FOLDER.format(date_str)) / "sorted"
+    output_path = Path(CONFIG_SINGLE_DAY_RESULT_FILE.format(date_str, time_slot_interval))
 
-    # This data structrue will have the final result.
+    # This data structures will have the final result.
     # All of the keys will represent all of the ways that have a bus route go through them.
     road_speeds = {}
 
@@ -157,7 +158,7 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
 
             if len(possible_relations1) <= 0:
                 if FLAG_DEBUG:
-                    print("No possible_relations found in {}, line {}".format(filename, i))
+                    print("No possible_relations found in {}, route_id {}, line {}".format(filename,route_id1, i))
                 continue
 
             projection1, way1 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
@@ -258,16 +259,19 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         debug_prof_count[1] += end_time - start_time
         debug_prof_count[2] += 1
         # print(filename)
-    print("All %d file processed, total %d lines, use %.2fs, %.4f/100lines" % (
-        debug_prof_count[2], debug_prof_count[0], debug_prof_count[1],
-        (debug_prof_count[1] * 100) / debug_prof_count[0]))
-
+    if FLAG_DEBUG and debug_prof_count[0] != 0:
+        print("All %d file processed, total %d lines, use %.2fs, %.4f/100lines" % (
+            debug_prof_count[2], debug_prof_count[0], debug_prof_count[1],
+            (debug_prof_count[1] * 100) / debug_prof_count[0]))
+    else:
+        print("All {} file processed".format(debug_prof_count[2]))
     for way, speed_samples in meta_speeds.items():
         # speed_intervals = []
         for i in range(len(speed_samples)):
             if len(speed_samples[i]) >= 1:
                 road_speeds[way][i] = sum(speed_samples[i]) / len(speed_samples[i])
 
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, 'w+', newline='') as output_file:
         writer = csv.writer(output_file)
         temp_row = ["Road ID"]
@@ -280,9 +284,12 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
         for key, value in road_speeds.items():
             writer.writerow([key] + value)
 
-    if FLAG_DEBUG:
+    with open(output_path.with_suffix('.p'), 'wb') as f:
+        pickle.dump(road_speeds, f)
+
+    if FLAG_DEBUG and debug_prof_count[0] != 0:
         print("Generating map...")
-        show_traffic_speed(final_way_table, final_node_table, road_speeds, -1, -1, time_slot_interval, map_type)
+        show_traffic_speed(final_way_table, final_node_table, road_speeds, -1, -1, time_slot_interval, "OSM")
         # for i in tqdm(range(0, 288, 12)):
         #     debug_show_traffic_speed(final_way_table, final_node_table, road_speeds, i, i + 11)
 
@@ -292,10 +299,10 @@ def find_traffic_speed(final_node_table, final_way_table, final_relation_table, 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage:")
-        print("find_traffic_speed.py [date] <result path> <result format>")
+        print("find_traffic_speed.py [date_str] <result path> <result format>")
         print("")
         print("Require:")
-        print("date       : 8 digit number of the date")
+        print("date_str       : 8 digit number of the date_str")
         print("             it is the folder name in data/")
         print("")
         print("Optional:")
@@ -305,7 +312,7 @@ if __name__ == '__main__':
         print("             possible value: JSON or pickle")
         exit(0)
 
-    date = sys.argv[1]
+    date_str = sys.argv[1]
 
     result_file_path = Path("graph")
     if len(sys.argv) >= 3:
@@ -335,13 +342,10 @@ if __name__ == '__main__':
     final_way_table = map_dates[1]
     final_relation_table = map_dates[2]
 
-    time_slot_interval = 5
-    data_directory = Path('data/{}/sorted/'.format(date))
-    Path("data/{}/result".format(date)).mkdir(parents=True, exist_ok=True)
-    output_path = Path("data/{}/result/{}_{}_min_road.csv".format(date, date, time_slot_interval))
+    time_slot_interval = 15
 
     start_time = time.time()
-    find_traffic_speed(final_node_table, final_way_table, final_relation_table, data_directory, output_path,
-                       time_slot_interval)
+    find_traffic_speed(date_str, final_node_table, final_way_table, final_relation_table,
+                       time_slot_interval=time_slot_interval)
     end_time = time.time()
     print("Total time = %.3fs" % (end_time - start_time))
