@@ -40,11 +40,10 @@ def retrieve_traffic_data(timestamp, time_interval):
         "time_slot_interval": 15,
         "interval_idx": 0,
         "predict_time_range": "2020-07-30 00:00 - 00:14",
-        "road_speed": [{"points": [[42.9597583, -78.8131567], [42.9599607, -78.812652], [42.9601687, -78.812126], [42.9605557, -78.811146], [42.9613168, -78.809176], [42.9613743, -78.8090273]],
-                        "speed": 16.274295463111194,
-                        "speed_ratio": 0.46497987037460553},
+        "road_speed": {way_id: {"speed": 16.274295463111194,
+                                "speed_ratio": 0.46497987037460553},
                         ...
-                      ]
+                      }
     }
     """
     # retrieve traffic at the specific timestamp (during the nearest interval)
@@ -62,6 +61,22 @@ def retrieve_traffic_data(timestamp, time_interval):
         data = json.load(fp)
 
     return jsonify(data)  # serialize and use JSON headers
+
+
+@app.route("/load_way_structure")
+def load_way_structure():
+    """
+    Answer the call from frontend to load and send back the way structure, i.e., {way_id: [points]}.
+
+    Returns
+    -------
+    json
+        A json object (python dictionary)
+    """
+    way_structure_path = Path('.') / 'static' / 'mapdata' / 'way_structure.json'
+    with open(way_structure_path, 'r') as fp:
+        way_structure = json.load(fp)
+    return jsonify(way_structure)
 
 
 def get_nearest_interval(dt: datetime.datetime, interval_size: int) -> int:

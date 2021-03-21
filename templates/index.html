@@ -38,6 +38,9 @@
         // substitution test
         document.getElementById('embed').innerHTML = "{{embed}}";
 
+        var way_and_points = null;
+        load_way_structure();  // TODO: remove this, when the issue with async call is fixed.
+
         // set the value of the datetime picker
         var cur_datetime = new Date();
         document.getElementById("datetime_picker").value = cur_datetime.toISOString().slice(0, 19);  // TODO: set the correct timezone
@@ -67,20 +70,39 @@
         }
 
         /**
+         * Load the way structure, i.e., way id and the associated points.
+         */
+        async function load_way_structure() {
+            // only need to load once
+            if (way_and_points === null) {
+                console.log("load_way_structure()");
+                fetch("load_way_structure")
+                    .then(response => {
+                        return response.json();
+                    }).then(function (text) {
+                        way_and_points = text;
+                        console.log(way_and_points);
+                    });
+            }
+        }
+
+        /**
         * Plot the traffic conditions on the Google Maps.
-        * @param {list of dictionay} road_speed - [{'points': list of [lat, lon], 'speed': float, 'speed_ratio': float}]
+        * @param dictionary{dictionay} road_speed - {way_id: {'speed': float, 'speed_ratio': float}}
         * @return null
         */
-        function plot_traffic_on_google_maps(road_speed) {
+        async function plot_traffic_on_google_maps(road_speed) {
             polylines = [];
-            for (var i = 0; i < road_speed.length; i++) {
-                const points = road_speed[i]['points'];
+            await load_way_structure(); // TODO: this does NOT work, i.e., the program won't wait till this funcation call completes.
+            const ways = Object.keys(way_and_points);
+            for (var i = 0; i < ways.length; i++) {
+                const points = way_and_points[ways[i]];
                 let coordinates = [];
                 for (let i = 0; i < points.length; i++) {
                     coordinates.push({lat: points[i][0], lng: points[i][1]});
                 }
                 // const speed = road_speed[i]['speed'];
-                const speed_ratio = road_speed[i]['speed_ratio'];
+                const speed_ratio = road_speed[ways[i]]['speed_ratio'];
 
                 const polyline = new google.maps.Polyline({
                         path: coordinates,

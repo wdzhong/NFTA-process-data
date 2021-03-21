@@ -16,6 +16,9 @@ from datetime import datetime, timedelta
 def predict_speed_dict_to_json(predict_speed_dict, target_date_str, time_slot_interval, interval_idx,
                                final_way_table, way_types, way_type_avg_speed_limit,
                                save_path="cache/predict_result/{0}/{1}/{2}.json"):
+    '''
+    TODO:
+    '''
     output_dict = {
         "generate_timestr": datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
         "generate_timestamp": int(datetime.today().timestamp()),
@@ -75,8 +78,12 @@ def generate_prediction_in_large_batches(predict_timestamp=int(datetime.now().ti
                                          config_history_date=PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE,
                                          config_history_data_range=PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE,
                                          config_weight=PREDICT_ROAD_CONDITION_CONFIG_WEIGHT):
+    '''
+    TODO:
+    '''
     # Check input, load data and preparation
     if len(config_history_date) != len(config_weight):
+        print("error: len(config_history_date) != len(config_weight)")
         return -1
 
     save_filename_list = ["way_graph", "way_types", "way_type_avg_speed_limit", "final_node_table", "final_way_table"]

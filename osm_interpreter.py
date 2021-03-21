@@ -197,7 +197,7 @@ def get_map_data(map_file, result_file_path, save_type):
     # Also we compute the average speed limit for each type of the road and store in the way_type_avg_speed_limit
     way_types = {}
     way_type_avg_speed_limit = {}
-    for way_id in final_way_table.keys():
+    for way_id in final_way_table:
         if "highway" in way_tag_table[way_id]:
             way_type = way_tag_table[way_id]["highway"]
             way_types[way_id] = way_type
