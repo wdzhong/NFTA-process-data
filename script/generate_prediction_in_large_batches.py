@@ -25,7 +25,7 @@ def predict_speed_dict_to_json(predict_speed_dict, target_date_str, time_slot_in
                                                          time_range_index_to_time_range_str(interval_idx,
                                                                                             interval_idx + 1,
                                                                                             time_slot_interval)),
-        "road_speed": []
+        "road_speed": {}
     }
     for way, single_road_speed in predict_speed_dict.items():
         speed_limit = way_type_avg_speed_limit[way_types.get(way, "unclassified")]
@@ -40,7 +40,7 @@ def predict_speed_dict_to_json(predict_speed_dict, target_date_str, time_slot_in
                 "speed_ratio": round(speed_ratio, 2)
             }
 
-            output_dict["road_speed"].append(way_dict)
+            output_dict["road_speed"][way] = way_dict
 
     temp_filepath = Path(save_path.format(target_date_str, time_slot_interval, interval_idx))
     temp_filepath.parent.mkdir(parents=True, exist_ok=True)
