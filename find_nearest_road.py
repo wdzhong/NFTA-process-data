@@ -25,6 +25,9 @@ from pathlib import Path
 # when deg = 3, delta = 0.001, we get following result
 #                3             2
 # y = 6.665e-09 x - 0.0001523 x + 1.237e-09 x + 1
+# when deg = 2, delta = 0.001, we get following result
+#                       2
+# y = - 1.52304519e-04 x + -2.37416349e-09 x + 1
 
 
 def distance(point1, point2):
@@ -188,13 +191,13 @@ def find_nearest_road(final_node_table, final_way_table, final_relation_table, r
     # The minimum distance using haversine formula determines which point I calculate is closest
     # to the datapoint. If the projection is off the road (the road stops before the vector), it
     # will not be considered. Instead, the distance of the end of the road will be used.
-    for key, value in possible_ways.items():
-        for i in range(len(value)):
-            temp_distance = distance(final_node_table[value[i]], datapoint)
+    for way_id, node_id in possible_ways.items():
+        for i in range(len(node_id)):
+            temp_distance = distance(final_node_table[node_id[i]], datapoint)
             if temp_distance < min_dist:
                 min_dist = temp_distance
-                min_way = key
-                min_projection = final_node_table[value[i]]
+                min_way = way_id
+                min_projection = final_node_table[node_id[i]]
                 mid_dist_index = i
     if min_way == -1:
         print("projection is off the road?")
