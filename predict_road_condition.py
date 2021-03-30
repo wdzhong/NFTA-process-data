@@ -1,6 +1,7 @@
 import csv
 import math
 import os
+import pickle
 import queue
 import sys
 import time
@@ -12,24 +13,16 @@ from pathlib import Path
 from helper.debug_predict_road_condition_map import show_traffic_speed
 
 
-def read_speed_matrix_from_file(date_str, interval, result_file_path):
+def read_speed_matrix_from_file(result_file_path):
     """
     This function will read the csv file and return a speed matrix.
 
     Parameters
     ----------
-    date_str: string
-        8-digit string represent the date_str using yyyyMMdd format e.g. 20200801
-
-    interval: int
-        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
-        by default it is 5 min.
-
-    result_file_path: String
-        The path (also the format) to the result csv files.
-        {0} is the value of date_str
-        {1} is the value of interval
-        by default it will use the project's file format.
+    result_file_path: Path
+        The path (also the format) to the result .csv files.
+        *** CSV only ***
+        *** This variable has different definition then other same name variable in this file ***
 
     Returns
     -------
@@ -37,8 +30,7 @@ def read_speed_matrix_from_file(date_str, interval, result_file_path):
 
     """
     speed_matrix = {}
-    filename = result_file_path.format(date_str, interval)
-    with open(filename, newline='') as f:
+    with open(result_file_path, newline='') as f:
         next(f)  # Skip first line
         lines = csv.reader(f)
         for line in lines:
@@ -160,8 +152,8 @@ def get_history_speed_matrix_list(history_data_date_str, config_weight, interval
         by default it is 5 min.
 
     result_file_path: String
-        The path (also the format) to the result csv files.
-        {0} is the value of date_str
+        The path (also the format) to the result .csv files.
+        {0} is a 8-digit date_str in yyyyMMdd format.
         {1} is the value of interval
         by default it will use the project's file format.
 
@@ -178,9 +170,13 @@ def get_history_speed_matrix_list(history_data_date_str, config_weight, interval
     history_data_missing_idx_list = []
     for i in range(len(history_data_date_str)):
         date_str = history_data_date_str[i]
-        temp_filepath = Path(result_file_path.format(date_str, interval))
-        if os.path.exists(temp_filepath):
-            history_speed_matrix_list.append(read_speed_matrix_from_file(date_str, interval, result_file_path))
+        temp_filepath_csv = Path(result_file_path.format(date_str, interval))
+        temp_filepath_p = temp_filepath_csv.with_suffix('.p')
+        if os.path.exists(temp_filepath_p):
+            with open(temp_filepath_p, 'rb') as f:
+                history_speed_matrix_list.append(pickle.load(f))
+        elif os.path.exists(temp_filepath_csv):
+            history_speed_matrix_list.append(read_speed_matrix_from_file(temp_filepath_csv))
         else:
             history_data_missing_idx_list.append(i)
             if FLAG_DEBUG:
@@ -424,7 +420,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
         by default it is 5 min.
 
     result_file_path: String
-        The path (also the format) to the result csv files.
+        The path (also the format) to the result .csv files.
         {0} is a 8-digit date_str in yyyyMMdd format.
         {1} is the value of interval
         by default it will use the project's file format.
@@ -501,7 +497,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 1:
         print("Usage:")
         print("predict_road_condition.py [timestamp]")
         print("")
