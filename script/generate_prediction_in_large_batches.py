@@ -1,4 +1,8 @@
 import json
+import os
+import shutil
+import time
+
 from tqdm import tqdm
 import sys
 
@@ -16,9 +20,9 @@ from datetime import datetime, timedelta
 def predict_speed_dict_to_json(predict_speed_dict, target_date_str, time_slot_interval, interval_idx,
                                final_way_table, way_types, way_type_avg_speed_limit,
                                save_path="cache/predict_result/{0}/{1}/{2}.json"):
-    '''
+    """
     TODO:
-    '''
+    """
     output_dict = {
         "generate_timestr": datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
         "generate_timestamp": int(datetime.today().timestamp()),
@@ -78,9 +82,9 @@ def generate_prediction_in_large_batches(predict_timestamp=int(datetime.now().ti
                                          config_history_date=PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE,
                                          config_history_data_range=PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE,
                                          config_weight=PREDICT_ROAD_CONDITION_CONFIG_WEIGHT):
-    '''
+    """
     TODO:
-    '''
+    """
     # Check input, load data and preparation
     if len(config_history_date) != len(config_weight):
         print("error: len(config_history_date) != len(config_weight)")
@@ -134,9 +138,45 @@ def generate_prediction_in_large_batches(predict_timestamp=int(datetime.now().ti
     return 0
 
 
+def clean_old_files(day_before_clean=7, cache_root="cache/predict_result"):
+    cache_root = Path(cache_root)
+    current_time = datetime.now()
+    for name in os.listdir(cache_root):
+        full_path = cache_root / name
+        if os.path.isdir(full_path):
+            if len(name) >= 8:
+                date_of_folder = datetime(int(name[0:4]), int(name[4:6]), int(name[6:8]))
+                if (current_time - date_of_folder).days > day_before_clean:
+                    print("Delete {} due to it is {} day(s) before today".format(full_path, day_before_clean))
+                    shutil.rmtree(full_path)
+
+
 if __name__ == '__main__':
+    if len(sys.argv) < 1:
+        print("Usage:")
+        print("./script/generate_prediction_in_large_batches.py [timestamp]")
+        print("")
+        print("Optional:")
+        print("timestamp  : 10-digit timestamp, use current time if not provided")
+        exit(0)
+    if len(sys.argv) >= 2:
+        current_timestamp = int(sys.argv[1])
+    else:
+        current_timestamp = int(datetime.now().timestamp())
+
+    clean_old_files()
+
+    day_offsets = [0, 1, 2, 3, 4, 5, 6, 7]
+    start = time.process_time()
+    for day_offset in day_offsets:
+        timestamp = current_timestamp + (day_offset * 86400)  # 24 hour * 60 min * 60 sec = 86400 s = 1 day
+        generate_prediction_in_large_batches(timestamp, interval=15)
+    if FLAG_DEBUG:
+        print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))
+
     generate_way_structure_json()
-    generate_prediction_in_large_batches(1596110400, interval=15)  # 2020 / 07 / 30
-    generate_prediction_in_large_batches(1596196800, interval=15)  # 2020 / 07 / 31
-    generate_prediction_in_large_batches(1596283200, interval=15)  # 2020 / 08 / 01
+    # generate_prediction_in_large_batches(1596110400, interval=15)  # 2020 / 07 / 30
+    # generate_prediction_in_large_batches(1596196800, interval=15)  # 2020 / 07 / 31
+    # generate_prediction_in_large_batches(1596283200, interval=15)  # 2020 / 08 / 01
+
 
