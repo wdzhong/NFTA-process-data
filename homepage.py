@@ -3,11 +3,18 @@ To run:
 
 $ python homepage.py
 '''
-from pathlib import Path
-import datetime
 import json
+import pickle
+from datetime import datetime
+from pathlib import Path
 
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, jsonify
+
+import predict_road_condition
+import script.generate_prediction_in_large_batches as predict_result_helper
+from helper.global_var import SAVE_TYPE_PICKLE
+from helper.graph_reader import graph_reader
+
 app = Flask(__name__)
 
 
@@ -18,14 +25,14 @@ def home_page():
     return render_template("index.html", embed=example_embed)
 
 
-@app.route("/get_traffic_data/<timestamp>/<time_interval>")
-def retrieve_traffic_data(timestamp, time_interval):
+@app.route("/get_traffic_data/<iso_timestamp>/<time_interval>")
+def retrieve_traffic_data(iso_timestamp, time_interval):
     """
     Get the traffic data for the given timestamp (at the nearest time interval/slot) and time_interval.
 
     Parameters
     ----------
-    timestamp: str
+    iso_timestamp: str
         A timestamp that is in iso format, e.g., 2020-07-30T12:00
 
     time_interval: str
@@ -33,7 +40,7 @@ def retrieve_traffic_data(timestamp, time_interval):
 
     Returns
     -------
-    Serilized Json object, containing traffic data, which has the following format,
+    Serialized Json object, containing traffic data, which has the following format,
     {
         "generate_timestr": "2021-03-02 19:52:44",
         "generate_timestamp": 1614732764, .
@@ -47,20 +54,62 @@ def retrieve_traffic_data(timestamp, time_interval):
     }
     """
     # retrieve traffic at the specific timestamp (during the nearest interval)
-    print(timestamp)
-    dt = datetime.datetime.fromisoformat(timestamp)
+    # print(timestamp)
+    dt_target = datetime.fromisoformat(iso_timestamp)
+    dt_now = datetime.now()
 
-    # find the nearest interval of the timestamp based on the time_interval size
-    interval_id = get_nearest_interval(dt, int(time_interval))
+    dt_diff_min = int((dt_target - dt_now).seconds / 60)
+    dt_diff_day = int((dt_target.date() - dt_now.date()).days)
 
-    # TODO: use global (constant) path
-    # data_path = Path('.') / 'cache' / 'predict_result' / '20200730' / '15' / '48.json'
-    data_path = Path('.') / 'cache' / 'predict_result' / dt.strftime('%Y%m%d') / time_interval / f'{interval_id}.json'
-    print(data_path)
-    with open(data_path, 'r') as fp:
-        data = json.load(fp)
+    if dt_diff_day >= 0:
+        if dt_diff_min <= 120:
+            # Less then 2 hours
+            return jsonify({"error": "no_data"})
+        else:
+            # find the nearest interval of the timestamp based on the time_interval size
+            interval_idx = get_nearest_interval(dt_target, int(time_interval))
 
-    return jsonify(data)  # serialize and use JSON headers
+            # TODO: use global (constant) path
+            data_path = Path("./cache/predict_result/{}/{}/{}.json".format(dt_target.strftime('%Y%m%d'), time_interval,
+                                                                           interval_idx))
+            if data_path.is_file():
+                with open(data_path, 'r') as fp:
+                    data = json.load(fp)
+            else:
+                predict_speed_dict = predict_road_condition.predict_road_condition(dt_target.timestamp(),
+                                                                                   interval=int(time_interval))
+                data = predict_result_helper.get_output_dict_with_less_parameter(predict_speed_dict, dt_target,
+                                                                                 int(time_interval))
+
+            return jsonify(data)  # serialize and use JSON headers
+    else:
+        # Past time, can use existing data
+        interval_idx = get_nearest_interval(dt_target, int(time_interval))
+        date_str = dt_target.strftime("%Y%m%d")
+        temp_filepath_csv = Path("data/{0}/result/{0}_{1}_min_road.csv".format(date_str, time_interval))
+        temp_filepath_p = temp_filepath_csv.with_suffix('.p')
+        speed_matrix = {}
+        if temp_filepath_p.is_file():
+            with open(temp_filepath_p, 'rb') as f:
+                speed_matrix = pickle.load(f)
+        elif temp_filepath_csv.is_file():
+            speed_matrix = predict_road_condition.read_speed_matrix_from_file(temp_filepath_csv)
+        else:
+            return jsonify({"error": "no_data"})
+        predict_speed_dict = {}
+        for way_id, his_speeds in speed_matrix.items():
+            predict_speed_dict[way_id] = his_speeds[interval_idx]
+
+        save_filename_list = ["way_graph", "way_types", "way_type_avg_speed_limit"]
+        temp_map_dates = graph_reader(Path("graph/"), SAVE_TYPE_PICKLE, save_filename_list)
+        way_graph = temp_map_dates[0]
+        way_types = temp_map_dates[1]
+        way_type_avg_speed_limit = temp_map_dates[2]
+        predict_speed_dict = predict_road_condition.estimate_no_data_road_speed_using_BFS(predict_speed_dict, way_graph,
+                                                                                          way_types,
+                                                                                          way_type_avg_speed_limit)
+        data = predict_result_helper.get_output_dict_with_less_parameter(predict_speed_dict, dt_target, time_interval)
+        return jsonify(data)
 
 
 @app.route("/load_way_structure")
@@ -79,7 +128,7 @@ def load_way_structure():
     return jsonify(way_structure)
 
 
-def get_nearest_interval(dt: datetime.datetime, interval_size: int) -> int:
+def get_nearest_interval(dt: datetime, interval_size: int) -> int:
     """
     Get the nearest time interval that the datetime falls in.
 
@@ -95,11 +144,12 @@ def get_nearest_interval(dt: datetime.datetime, interval_size: int) -> int:
     -------
     int: the index of the interval that the given datetime falls in.
     """
-    total_minutes = dt.hour * 60 + dt.minute + (1 if dt.second else 0)
+    total_minutes = dt.hour * 60 + dt.minute
     return total_minutes // interval_size
 
-app.run(debug=True)
 
+if __name__ == '__main__':
+    app.run(host="localhost", port=82, debug=True)
 
 '''
 references
