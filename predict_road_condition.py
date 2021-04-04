@@ -5,37 +5,13 @@ import pickle
 import queue
 import sys
 import time
+from datetime import datetime, timedelta
+from pathlib import Path
+
+from helper.debug_predict_road_condition_map import show_traffic_speed
 from helper.global_var import FLAG_DEBUG, SAVE_TYPE_PICKLE, PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE, \
     PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE, PREDICT_ROAD_CONDITION_CONFIG_WEIGHT
 from helper.graph_reader import graph_reader
-from datetime import datetime, timedelta
-from pathlib import Path
-from helper.debug_predict_road_condition_map import show_traffic_speed
-
-
-def read_speed_matrix_from_file(result_file_path):
-    """
-    This function will read the csv file and return a speed matrix.
-
-    Parameters
-    ----------
-    result_file_path: Path
-        The path (also the format) to the result .csv files.
-        *** CSV only ***
-        *** This variable has different definition then other same name variable in this file ***
-
-    Returns
-    -------
-    Return a 2-D list (matrix) that represent the speed matrix.
-
-    """
-    speed_matrix = {}
-    with open(result_file_path, newline='') as f:
-        next(f)  # Skip first line
-        lines = csv.reader(f)
-        for line in lines:
-            speed_matrix[int(line[0])] = list(map(float, line[1:]))
-    return speed_matrix
 
 
 def reassign_weight(config_weight, history_data_missing_idx_set):
@@ -132,6 +108,31 @@ def compute_predict_speed(temp_history_speed, config_weight):
     for i in range(len(temp_history_speed)):
         speed += temp_history_speed[i] * config_weight[i]
     return speed
+
+
+def read_speed_matrix_from_file(result_file_path):
+    """
+    This function will read the csv file and return a speed matrix.
+
+    Parameters
+    ----------
+    result_file_path: Path
+        The path (also the format) to the result .csv files.
+        *** CSV only ***
+        *** This variable has different definition then other same name variable in this file ***
+
+    Returns
+    -------
+    Return a 2-D list (matrix) that represent the speed matrix.
+
+    """
+    speed_matrix = {}
+    with open(result_file_path, newline='') as f:
+        next(f)  # Skip first line
+        lines = csv.reader(f)
+        for line in lines:
+            speed_matrix[int(line[0])] = list(map(float, line[1:]))
+    return speed_matrix
 
 
 def get_history_speed_matrix_list(history_data_date_str, config_weight, interval, result_file_path):
@@ -248,7 +249,7 @@ def estimate_no_data_road_speed_using_BFS(predict_speed_dict, way_graph, way_typ
         if speed > 0:
             bfs_start_way = way
             break
-    
+
     if bfs_start_way == 0:
         if FLAG_DEBUG:
             print("No data at all, assume all roads have good condition.")
@@ -509,6 +510,7 @@ if __name__ == '__main__':
     else:
         timestamp = int(datetime.now().timestamp())
     start = time.process_time()
-    predict_road_condition(timestamp)
+    result = predict_road_condition(timestamp)
+    print(result)
     if FLAG_DEBUG:
         print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))
