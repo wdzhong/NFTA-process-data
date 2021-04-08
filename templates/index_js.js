@@ -6,8 +6,8 @@ function onload_func() {
     // set the value of the datetime picker
     document.getElementById("datetime_picker").value = new Date().toISOString().slice(0, 19);
     window.setInterval(current_time_update, 500);
-    window.setInterval(function ()
-    {get_traffic_for_given_time(new Date().getTime().toString().substr(0,10));}, 60000);
+    // window.setInterval(function ()
+    // {get_traffic_for_given_time(new Date().getTime().toString().substr(0,10));}, 60000);
     load_way_structure()
 
 }
