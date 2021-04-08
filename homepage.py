@@ -5,35 +5,38 @@ $ python homepage.py
 '''
 import json
 import pickle
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from flask import Flask, render_template, jsonify
 
 import predict_road_condition
 import script.generate_prediction_in_large_batches as predict_result_helper
-from helper.global_var import SAVE_TYPE_PICKLE
+from helper.global_var import SAVE_TYPE_PICKLE, GOOGLE_MAPS_API_KEY
 from helper.graph_reader import graph_reader
 
 app = Flask(__name__)
+app.config["SEND_FILE_MAX_AGE_DEFAULT"] = timedelta(hours=3)
 
 
 @app.route("/")
 def home_page():
-    # return "Hello, world!"
-    example_embed = "Welcome!"
-    return render_template("index.html", embed=example_embed)
+    return render_template("index.html", google_map_api_key=GOOGLE_MAPS_API_KEY)
+
+@app.route("/index_js.js")
+def home_page_js():
+    return render_template("index_js.js")
 
 
-@app.route("/get_traffic_data/<iso_timestamp>/<time_interval>")
-def retrieve_traffic_data(iso_timestamp, time_interval):
+@app.route("/get_traffic_data/<timestamp>/<time_interval>")
+def retrieve_traffic_data(timestamp, time_interval):
     """
     Get the traffic data for the given timestamp (at the nearest time interval/slot) and time_interval.
 
     Parameters
     ----------
-    iso_timestamp: str
-        A timestamp that is in iso format, e.g., 2020-07-30T12:00
+    timestamp: str
+        A 10 digit timestamp
 
     time_interval: str
         The time interval size that the user has selected, e.g., 15, 30, and 45.
@@ -55,8 +58,9 @@ def retrieve_traffic_data(iso_timestamp, time_interval):
     """
     # retrieve traffic at the specific timestamp (during the nearest interval)
     # print(timestamp)
-    dt_target = datetime.fromisoformat(iso_timestamp)
+    dt_target = datetime.fromtimestamp(int(timestamp))
     dt_now = datetime.now()
+    time_interval = int(time_interval)
 
     dt_diff_min = int((dt_target - dt_now).seconds / 60)
     dt_diff_day = int((dt_target.date() - dt_now.date()).days)
@@ -67,7 +71,7 @@ def retrieve_traffic_data(iso_timestamp, time_interval):
             return jsonify({"error": "no_data"})
         else:
             # find the nearest interval of the timestamp based on the time_interval size
-            interval_idx = get_nearest_interval(dt_target, int(time_interval))
+            interval_idx = get_nearest_interval(dt_target, time_interval)
 
             # TODO: use global (constant) path
             data_path = Path("./cache/predict_result/{}/{}/{}.json".format(dt_target.strftime('%Y%m%d'), time_interval,
@@ -79,12 +83,12 @@ def retrieve_traffic_data(iso_timestamp, time_interval):
                 predict_speed_dict = predict_road_condition.predict_road_condition(dt_target.timestamp(),
                                                                                    interval=int(time_interval))
                 data = predict_result_helper.get_output_dict_with_less_parameter(predict_speed_dict, dt_target,
-                                                                                 int(time_interval))
+                                                                                 time_interval)
 
             return jsonify(data)  # serialize and use JSON headers
     else:
         # Past time, can use existing data
-        interval_idx = get_nearest_interval(dt_target, int(time_interval))
+        interval_idx = get_nearest_interval(dt_target, time_interval)
         date_str = dt_target.strftime("%Y%m%d")
         temp_filepath_csv = Path("data/{0}/result/{0}_{1}_min_road.csv".format(date_str, time_interval))
         temp_filepath_p = temp_filepath_csv.with_suffix('.p')
