@@ -1,11 +1,13 @@
+import api_key
+
 # When it is True, the program will return more things for debug purpose
-FLAG_DEBUG = True
+FLAG_DEBUG = False
 # find_nearest_road debug will print lot more information then a general debug print. It is config by a separate flag
 FLAG_FIND_NEAREST_ROAD_DEBUG = False
 
 # Google Map API key for generate map
 # Get API key https://developers.google.com/maps/documentation/javascript/get-api-key
-GOOGLE_MAPS_API_KEY = ""
+GOOGLE_MAPS_API_KEY = api_key.GOOGLE_MAPS_API_KEY
 
 # File path setting
 
