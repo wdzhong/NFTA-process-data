@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 sys.path.append('./')
 from helper.global_var import FLAG_DEBUG, PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE, \
-    PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE, PREDICT_ROAD_CONDITION_CONFIG_WEIGHT
+    PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE, PREDICT_ROAD_CONDITION_CONFIG_WEIGHT, GPILB_CACHE_PATH
 from pathlib import Path
 from helper.helper_time_range_index_to_str import time_range_index_to_time_range_str
 import predict_road_condition
@@ -63,9 +63,46 @@ def get_output_dict_with_less_parameter(predict_speed_dict, target_dt, time_slot
 
 def predict_speed_dict_to_json(predict_speed_dict, predict_time, time_slot_interval, interval_idx,
                                final_way_table, way_types, way_type_avg_speed_limit,
-                               save_path="cache/predict_result/{0}/{1}/{2}.json"):
+                               save_path=GPILB_CACHE_PATH):
     """
-    TODO:
+    Get the predict speed dict and save it into a file in JSON format
+
+    Parameters
+    ----------
+    predict_speed_dict: Dictionary
+        Return of predict_road_condition.compute_speed_dict()
+        A dictionary that use way_id as key and the predict bus speed on that road at the given time as value.
+        When there is an error, it will return a dictionary with key "Error" and the detail of the error as the value
+
+    predict_time: datetime
+        Time of predict in datetime format
+
+    time_slot_interval:Int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min.
+
+    interval_idx: Int
+        The index of the period of the predict_timestamp in predict_road_condition
+
+    final_way_table: Dict
+        A dictionary that stored the way id and a list of node id's as a key value pair.
+
+    way_types: Dictionary
+        A dictionary that use way_id as key and the type of the way as the value
+
+    way_type_avg_speed_limit: Dictionary
+        A dictionary that use way_type as key and the average speed limit of that type of way as the value
+
+    save_path: String
+        path where the json file save
+        {0} is a 8-digit date_str in yyyyMMdd format.
+        {1} is the value of interval
+        {2} is the interval_idx
+        by default it will use the project's file format.
+
+    Returns
+    -------
+    None
     """
     output_dict = get_output_dict(predict_speed_dict, predict_time, time_slot_interval, interval_idx,
                                   final_way_table, way_types, way_type_avg_speed_limit)
@@ -103,7 +140,35 @@ def generate_prediction_in_large_batches(predict_timestamp=int(datetime.now().ti
                                          config_history_data_range=PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE,
                                          config_weight=PREDICT_ROAD_CONDITION_CONFIG_WEIGHT):
     """
-    TODO:
+    Generate prediction in large batches (in day(s))
+
+    predict_timestamp: int (timestamp)
+        10-digit timestamp, use current time if not provided
+        This timestamp will be use to get the date ONLY
+
+    interval: int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min.
+
+    config_history_date: List of int
+        This parameter specifies which historical days of data the function needs to use in the computation. It should
+        be a List of int, where each int means the offset of the day that need predict. e.g. -1 means yesterday
+        by default it will use a predetermined configuration
+
+    config_history_data_range: List of int
+        This parameter specifies the range and the order of using the nearby data to replace the missing data. If the
+        value is [-1, 1] and if the data we are looking for located on the ith index is missing. We will try to use the
+        value at i-1 or i+1 as the data located in ith index.
+        by default it will use a predetermined configuration
+
+    config_weight: List of float
+        This parameter specifies the weight of each day's data when compute the weighted sum.
+        by default it will use a predetermined configuration
+
+    Returns
+    -------
+    None
+
     """
     # Check input, load data and preparation
     if len(config_history_date) != len(config_weight):

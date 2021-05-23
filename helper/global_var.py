@@ -1,4 +1,4 @@
-import api_key
+import helper.api_key as api_key
 
 # When it is True, the program will return more things for debug purpose
 FLAG_DEBUG = False
@@ -31,7 +31,7 @@ PROCESS_DATA_START_TIME = 0
 PROCESS_DATA_END_TIME = 24
 
 # predict_road_condition
-# See predict_road_condition in predict_road_condition.py for more detail of each variable
+# See predict_road_condition() in predict_road_condition.py for more detail of each variable
 PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE = [-1, -2, -3, -7, -14, -21, -28, -35, -42, -49, -56, -63, -70]
 PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE = [-1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6]
 PREDICT_ROAD_CONDITION_CONFIG_WEIGHT = [0.08821194073566006, 0.08402736745847723, 0.09180261375018595,
@@ -39,3 +39,8 @@ PREDICT_ROAD_CONDITION_CONFIG_WEIGHT = [0.08821194073566006, 0.08402736745847723
                                         0.03803083890311526, 0.08628806480829161, 0.08805171256460817,
                                         0.08184255395533459, 0.07774612670061147, 0.06883249115674404,
                                         0.06392337112461549]
+
+# generate_prediction_in_large_batches (GPILB)
+# See save_path in predict_speed_dict_to_json() in script/generate_prediction_in_large_batches.py for more detail
+# This variable also use in retrieve_traffic_data() in homepage.py
+GPILB_CACHE_PATH = "cache/predict_result/{0}/{1}/{2}.json"

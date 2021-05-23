@@ -12,7 +12,7 @@ from flask import Flask, render_template, jsonify
 
 import predict_road_condition
 import script.generate_prediction_in_large_batches as predict_result_helper
-from helper.global_var import SAVE_TYPE_PICKLE, GOOGLE_MAPS_API_KEY
+from helper.global_var import SAVE_TYPE_PICKLE, GOOGLE_MAPS_API_KEY, GPILB_CACHE_PATH
 from helper.graph_reader import graph_reader
 
 app = Flask(__name__)
@@ -73,8 +73,7 @@ def retrieve_traffic_data(timestamp, time_interval):
             # find the nearest interval of the timestamp based on the time_interval size
             interval_idx = get_nearest_interval(dt_target, time_interval)
 
-            # TODO: use global (constant) path
-            data_path = Path("./cache/predict_result/{}/{}/{}.json".format(dt_target.strftime('%Y%m%d'), time_interval,
+            data_path = Path(GPILB_CACHE_PATH.format(dt_target.strftime('%Y%m%d'), time_interval,
                                                                            interval_idx))
             if data_path.is_file():
                 with open(data_path, 'r') as fp:
