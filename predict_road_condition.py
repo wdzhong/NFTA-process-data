@@ -301,7 +301,7 @@ def compute_speed_dict(interval, interval_idx, history_speed_matrix_list, full_w
 
     Parameters
     ----------
-    interval: int
+    interval: Int
         The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
         by default it is 5 min.
 
@@ -448,7 +448,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
     When there is an error, it will return a dictionary with key "Error" and the detail of the error as the value
 
     """
-    # TODO: This function could be implemented using pandas and numpy (Shiluo)
+    # TODO: This function could be implemented using pandas and numpy for better performance(Shiluo)
     # Check input, load data and preparation
     if len(config_history_date) != len(config_weight):
         return -1
