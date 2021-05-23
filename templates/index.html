@@ -18,7 +18,17 @@
 
 <div style="overflow: auto; white-space: nowrap;">
 <div style="display: inline-block;">
-    <input id="datetime_picker" name="traffic_time" style="width: 220px" type="datetime-local">
+    <div style="display: inline-block;">
+        <input id="datetime_picker" name="traffic_time" style="width: 220px" type="datetime-local">
+    </div>
+    <div style="display: inline-block;">
+      <select id="time_interval_picker">
+      <option value="5" >5 min</option>
+      <option value="15" selected="selected">15 min</option>
+      <option value="30" disabled>30 min (not available)</option>
+      <option value="60" disabled>60 min (not available)</option>
+    </select>
+    </div>
 </div>
 
 <div style="display: inline-block;">

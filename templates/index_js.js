@@ -28,7 +28,7 @@ function get_traffic_for_given_time(timestamp) {
     console.log(timestamp);  // e.g., 2021-03-03T20:30
     // A number representing the milliseconds elapsed since January 1, 1970, 00:00:00 UTC, e.g., 1614821400000
 
-    const time_interval = '15';  // TODO: get the value from the UI
+    const time_interval = document.getElementById("time_interval_picker").value;
     const query_str = '/get_traffic_data/' + timestamp + '/' + time_interval;
     ajaxGetRequest(query_str, get_traffic_for_selected_time_callback);
 }
@@ -104,12 +104,20 @@ function clear_polylines_from_google_maps() {
  * @return {string} the color of the line.
  */
 function get_color_based_on_speed(speed_ratio) {
-    // TODO: adjust the thresholds; maybe add more levels
-    if (speed_ratio < 0.2) {
-        return "#FF0000";
+    if (speed_ratio < 0.1) {
+        return "#b52f3b";
     }
-    if (speed_ratio < 0.4) {
-        return "#eb9c34";
+    else if (speed_ratio < 0.2) {
+        return "#da8015";
+    }
+    else if (speed_ratio < 0.3) {
+        return "#f2b021";
+    }
+    else if (speed_ratio < 0.4) {
+        return "#e5ce72";
+    }
+    else if (speed_ratio < 0.5) {
+        return "#b9cb67";
     }
     return "#34eb95";
 }
