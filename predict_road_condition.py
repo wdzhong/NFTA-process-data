@@ -1,49 +1,17 @@
 import csv
 import math
 import os
+import pickle
 import queue
 import sys
 import time
+from datetime import datetime, timedelta
+from pathlib import Path
+
+from helper.debug_predict_road_condition_map import show_traffic_speed
 from helper.global_var import FLAG_DEBUG, SAVE_TYPE_PICKLE, PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE, \
     PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE, PREDICT_ROAD_CONDITION_CONFIG_WEIGHT
 from helper.graph_reader import graph_reader
-from datetime import datetime, timedelta
-from pathlib import Path
-from helper.debug_predict_road_condition_map import show_traffic_speed
-
-
-def read_speed_matrix_from_file(date_str, interval, result_file_path):
-    """
-    This function will read the csv file and return a speed matrix.
-
-    Parameters
-    ----------
-    date_str: string
-        8-digit string represent the date_str using yyyyMMdd format e.g. 20200801
-
-    interval: int
-        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
-        by default it is 5 min.
-
-    result_file_path: String
-        The path (also the format) to the result csv files.
-        {0} is the value of date_str
-        {1} is the value of interval
-        by default it will use the project's file format.
-
-    Returns
-    -------
-    Return a 2-D list (matrix) that represent the speed matrix.
-
-    """
-    speed_matrix = {}
-    filename = result_file_path.format(date_str, interval)
-    with open(filename, newline='') as f:
-        next(f)  # Skip first line
-        lines = csv.reader(f)
-        for line in lines:
-            speed_matrix[int(line[0])] = list(map(float, line[1:]))
-    return speed_matrix
 
 
 def reassign_weight(config_weight, history_data_missing_idx_set):
@@ -142,6 +110,31 @@ def compute_predict_speed(temp_history_speed, config_weight):
     return speed
 
 
+def read_speed_matrix_from_file(result_file_path):
+    """
+    This function will read the csv file and return a speed matrix.
+
+    Parameters
+    ----------
+    result_file_path: Path
+        The path (also the format) to the result .csv files.
+        *** CSV only ***
+        *** This variable has different definition then other same name variable in this file ***
+
+    Returns
+    -------
+    Return a 2-D list (matrix) that represent the speed matrix.
+
+    """
+    speed_matrix = {}
+    with open(result_file_path, newline='') as f:
+        next(f)  # Skip first line
+        lines = csv.reader(f)
+        for line in lines:
+            speed_matrix[int(line[0])] = list(map(float, line[1:]))
+    return speed_matrix
+
+
 def get_history_speed_matrix_list(history_data_date_str, config_weight, interval, result_file_path):
     """
     This function will read all historical day's data given in history_data_date_str and return a list of speed matrix.
@@ -160,8 +153,8 @@ def get_history_speed_matrix_list(history_data_date_str, config_weight, interval
         by default it is 5 min.
 
     result_file_path: String
-        The path (also the format) to the result csv files.
-        {0} is the value of date_str
+        The path (also the format) to the result .csv files.
+        {0} is a 8-digit date_str in yyyyMMdd format.
         {1} is the value of interval
         by default it will use the project's file format.
 
@@ -178,9 +171,13 @@ def get_history_speed_matrix_list(history_data_date_str, config_weight, interval
     history_data_missing_idx_list = []
     for i in range(len(history_data_date_str)):
         date_str = history_data_date_str[i]
-        temp_filepath = Path(result_file_path.format(date_str, interval))
-        if os.path.exists(temp_filepath):
-            history_speed_matrix_list.append(read_speed_matrix_from_file(date_str, interval, result_file_path))
+        temp_filepath_csv = Path(result_file_path.format(date_str, interval))
+        temp_filepath_p = temp_filepath_csv.with_suffix('.p')
+        if os.path.exists(temp_filepath_p):
+            with open(temp_filepath_p, 'rb') as f:
+                history_speed_matrix_list.append(pickle.load(f))
+        elif os.path.exists(temp_filepath_csv):
+            history_speed_matrix_list.append(read_speed_matrix_from_file(temp_filepath_csv))
         else:
             history_data_missing_idx_list.append(i)
             if FLAG_DEBUG:
@@ -252,7 +249,7 @@ def estimate_no_data_road_speed_using_BFS(predict_speed_dict, way_graph, way_typ
         if speed > 0:
             bfs_start_way = way
             break
-    
+
     if bfs_start_way == 0:
         if FLAG_DEBUG:
             print("No data at all, assume all roads have good condition.")
@@ -304,7 +301,7 @@ def compute_speed_dict(interval, interval_idx, history_speed_matrix_list, full_w
 
     Parameters
     ----------
-    interval: int
+    interval: Int
         The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
         by default it is 5 min.
 
@@ -424,7 +421,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
         by default it is 5 min.
 
     result_file_path: String
-        The path (also the format) to the result csv files.
+        The path (also the format) to the result .csv files.
         {0} is a 8-digit date_str in yyyyMMdd format.
         {1} is the value of interval
         by default it will use the project's file format.
@@ -451,7 +448,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
     When there is an error, it will return a dictionary with key "Error" and the detail of the error as the value
 
     """
-    # TODO: This function could be implemented using pandas and numpy (Shiluo)
+    # TODO: This function could be implemented using pandas and numpy for better performance(Shiluo)
     # Check input, load data and preparation
     if len(config_history_date) != len(config_weight):
         return -1
@@ -501,7 +498,7 @@ def predict_road_condition(predict_timestamp=int(datetime.now().timestamp()), in
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
+    if len(sys.argv) < 1:
         print("Usage:")
         print("predict_road_condition.py [timestamp]")
         print("")
@@ -513,6 +510,7 @@ if __name__ == '__main__':
     else:
         timestamp = int(datetime.now().timestamp())
     start = time.process_time()
-    predict_road_condition(timestamp)
+    result = predict_road_condition(timestamp)
+    print(result)
     if FLAG_DEBUG:
         print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))

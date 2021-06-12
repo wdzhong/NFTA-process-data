@@ -1,167 +1,53 @@
-
 <head>
+    <title>Traffic Condition in Buffalo, NY</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-    <style type="text/css">
+    <script src="/index_js.js"></script>
+    <link href="static/css/milligram.min.css" rel="stylesheet">
+    <style>
         #map {
             height: 80%;;
         }
     </style>
-    <script>
-        let map;
-        let polylines;  // save the Google Maps polyline "handlers" (list of object) s.t. we can clear them when needed.
-
-        function initMap() {
-          map = new google.maps.Map(document.getElementById("map"), {
-            center: { lat: 42.89, lng: -78.74},
-            zoom: 12,
-          });
-        }
-      </script>
 </head>
 
-<body>
-    <h1>Traffic Condtion in Buffalo, NY</h1>
+<body onload="onload_func();">
+<h1>Traffic Condition in Buffalo, NY</h1>
+<div>
+    <p id='clock'></p>
+</div>
 
-    <p id='embed'>To be replaced.</p>
-    <p id='clock'>Time</p>
+<div style="overflow: auto; white-space: nowrap;">
+<div style="display: inline-block;">
+    <div style="display: inline-block;">
+        <input id="datetime_picker" name="traffic_time" style="width: 220px" type="datetime-local">
+    </div>
+    <div style="display: inline-block;">
+      <select id="time_interval_picker">
+      <option value="5" >5 min</option>
+      <option value="15" selected="selected">15 min</option>
+      <option value="30" disabled>30 min (not available)</option>
+      <option value="60" disabled>60 min (not available)</option>
+    </select>
+    </div>
+</div>
 
-    <input id="datetime_picker" type="datetime-local" name="traffic_time">
-    <button id="get_traffic_for_time_btn" name="get_traffic_for_time_btn" onclick="get_traffic_for_selected_time()">Get Traffic Condition</button>
-    <button onclick="">Show Current Traffic</button>
-    <button onclick="clear_polylines_from_google_maps()">Clear Maps</button>
+<div style="display: inline-block;">
+    <button id="btn_get_traffic_for_time" name="btn_get_traffic_for_time"
+            onclick="get_traffic_for_given_time(Date.parse(document.getElementById('datetime_picker').value).toString().substr(0,10));">
+        Get Traffic Condition
+    </button>
+    <button id="btn_get_current_traffic" name="btn_get_current_traffic"
+            onclick="get_traffic_for_given_time(new Date().getTime().toString().substr(0,10));">Show Current Traffic</button>
+<!--    <button onclick="clear_polylines_from_google_maps()">Clear Maps</button>-->
+</div>
+</div>
 
-    <div id="map"></div>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=<GOOGLE_MAPS_API_KEY>&callback=initMap&libraries=&v=weekly" async></script>
+<div id="map"></div>
 
-    <script>
-        // substitution test
-        document.getElementById('embed').innerHTML = "{{embed}}";
-
-        var way_and_points = null;
-        load_way_structure();  // TODO: remove this, when the issue with async call is fixed.
-
-        // set the value of the datetime picker
-        var cur_datetime = new Date();
-        document.getElementById("datetime_picker").value = cur_datetime.toISOString().slice(0, 19);  // TODO: set the correct timezone
-
-        /**
-        * Get the traffic information back from the backend based on the value of the datetime picker.
-        * And plot the traffic condition on the Google Maps.
-        */
-        function get_traffic_for_selected_time() {
-            console.log("Get traffic condition button clicked!");
-            const picked_datetime = document.getElementById("datetime_picker").value;
-            console.log(picked_datetime);  // e.g., 2021-03-03T20:30
-            Date.parse(picked_datetime);  // A number representing the milliseconds elapsed since January 1, 1970, 00:00:00 UTC, e.g., 1614821400000
-
-            const time_interval = '15';  // TODO: get the value from the UI
-            const query_str = '/get_traffic_data/' + picked_datetime + '/' + time_interval;
-            // const query_str = '/get_traffic_data/' + '2020-07-30T12:00' + '/' + time_interval;  // use this fixed timestamp for testing
-            fetch(query_str)
-                .then(function (response) {
-                    return response.json();
-                }).then(function (text) {
-                    // console.log(text);
-                    // console.log(text['road_speed'][0]['points']);
-                    clear_polylines_from_google_maps();
-                    plot_traffic_on_google_maps(text['road_speed']);
-                });
-        }
-
-        /**
-         * Load the way structure, i.e., way id and the associated points.
-         */
-        async function load_way_structure() {
-            // only need to load once
-            if (way_and_points === null) {
-                console.log("load_way_structure()");
-                fetch("load_way_structure")
-                    .then(response => {
-                        return response.json();
-                    }).then(function (text) {
-                        way_and_points = text;
-                        console.log(way_and_points);
-                    });
-            }
-        }
-
-        /**
-        * Plot the traffic conditions on the Google Maps.
-        * @param dictionary{dictionay} road_speed - {way_id: {'speed': float, 'speed_ratio': float}}
-        * @return null
-        */
-        async function plot_traffic_on_google_maps(road_speed) {
-            polylines = [];
-            await load_way_structure(); // TODO: this does NOT work, i.e., the program won't wait till this funcation call completes.
-            const ways = Object.keys(way_and_points);
-            for (var i = 0; i < ways.length; i++) {
-                const points = way_and_points[ways[i]];
-                let coordinates = [];
-                for (let i = 0; i < points.length; i++) {
-                    coordinates.push({lat: points[i][0], lng: points[i][1]});
-                }
-                // const speed = road_speed[i]['speed'];
-                const speed_ratio = road_speed[ways[i]]['speed_ratio'];
-
-                const polyline = new google.maps.Polyline({
-                        path: coordinates,
-                        geodesic: true,
-                        strokeColor: get_color_based_on_speed(speed_ratio),
-                        strokeOpacity: 1.0,
-                        strokeWeight: 2,
-                });
-                polyline.setMap(map);
-                polylines.push(polyline);
-            }
-        }
-
-        /**
-        * Clear/Remove the existing polylines from the map.
-        */
-        function clear_polylines_from_google_maps() {
-            console.log("Clear maps");
-            if (polylines == undefined) return;
-            for (let i = 0; i < polylines.length; i++) {
-                polylines[i].setMap(null);
-            }
-        }
-
-        /**
-        * Get the line color based on the traffic condition.
-        * @param {float} speed_ratio - The ratio between the traffic speed and the speed limit of that road segment.
-        * @return {string} the color of the line.
-        */
-        function get_color_based_on_speed(speed_ratio) {
-            // TODO: adjust the thresholds; maybe add more levels
-            if (speed_ratio < 0.2) {
-                return "#FF0000";
-            }
-            if (speed_ratio < 0.4) {
-                return "#eb9c34";
-            }
-            return "#34eb95";
-        }
-
-        function startTime() {
-            var today = new Date();
-            var h = today.getHours();
-            var m = today.getMinutes();
-            var s = today.getSeconds();
-            m = checkTime(m);
-            s = checkTime(s);
-            document.getElementById('clock').innerHTML =
-                h + ":" + m + ":" + s;
-            var t = setTimeout(startTime, 500);
-        }
-        function checkTime(i) {
-            if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
-            return i;
-        }
-
-        startTime()
-
-    </script>
+<!-- Fill the GOOGLE_MAPS_API_KEY in ./helper/global_var.py and open this webpage via Flask (python3 ./homepage.py),
+the google_map_api_key will be auto fill-->
+<script async src="https://maps.googleapis.com/maps/api/js?key={{ google_map_api_key }}&callback=initMap&libraries=&v=weekly"></script>
 
 </body>
 

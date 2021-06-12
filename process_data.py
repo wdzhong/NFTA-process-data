@@ -4,9 +4,11 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import List
-import helper.global_var as global_var
+
 import pandas as pd
 from tqdm import tqdm
+
+import helper.global_var as global_var
 
 
 def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
