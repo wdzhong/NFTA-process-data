@@ -1,4 +1,5 @@
 import csv
+import datetime
 import pickle
 import time
 import os
@@ -16,7 +17,7 @@ from tqdm import tqdm
 
 
 def find_traffic_speed(date_str, final_node_table, final_way_table, final_relation_table,
-                       time_slot_interval=5):
+                       time_slot_interval=5, recent_data_time=0):
     """
     Get the road speed matrix
 
@@ -42,6 +43,9 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
         The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
         by default it is 5 min
 
+    recent_data_time: Int
+        If not 0, the function will only use the new data within [recent_data_time (in minute)] from the current time
+
     Returns
     -------
     road_speeds: Map of [Int to [List of Int]]
@@ -58,6 +62,9 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
 
     data_directory = Path(CONFIG_SINGLE_DAY_FOLDER.format(date_str)) / "sorted"
     output_path = Path(CONFIG_SINGLE_DAY_RESULT_FILE.format(date_str, time_slot_interval))
+    if recent_data_time > 0:
+        output_path = output_path.with_name(output_path.stem + "__latest_{}_min_only".format(recent_data_time) +
+                                            output_path.suffix)
 
     # This data structures will have the final result.
     # All of the keys will represent all of the ways that have a bus route go through them.
@@ -88,9 +95,12 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
         bus_route_to_relation_index[temp_route].add(relation_index)
 
     debug_prof_count = [0, 0, 0]
+    current_time = datetime.datetime.now()
+    new_data_threshold_in_second_of_the_day = \
+        (current_time.hour * 3600 + current_time.minute * 60 + current_time.second) - (recent_data_time * 60)
+
     for filename in tqdm(os.listdir(data_directory)):
         start_time = time.time()
-
         procressed_lines_data = []
         with open(data_directory / filename, "r", newline='') as csv_file:
             reader_csv_file = csv.reader(csv_file)
@@ -104,6 +114,8 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
             for temp_line in reader_csv_file:
                 temp_total_second = int(temp_line[10][11:13]) * 3600 + int(temp_line[10][14:16]) * 60 + \
                                     int(temp_line[10][17:19])
+                if recent_data_time > 0 and temp_total_second < new_data_threshold_in_second_of_the_day:
+                    continue
                 temp_data = [int(temp_line[1]),  # route_id
                              float(temp_line[7]),  # lat
                              float(temp_line[8]),  # lng
@@ -129,8 +141,10 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
 
             # These are all disqualifying pairs.
             if interval1 != interval2:
+                if not (2 < interval1 - interval2 < 2):
+                    continue
                 # print('different interval')
-                continue
+                # continue
             if total_seconds1 == total_seconds2:
                 # print('same time')
                 continue
@@ -158,7 +172,7 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
 
             if len(possible_relations1) <= 0:
                 if FLAG_DEBUG:
-                    print("No possible_relations found in {}, route_id {}, line {}".format(filename,route_id1, i))
+                    print("No possible_relations found in {}, route_id {}, line {}".format(filename, route_id1, i))
                 continue
 
             projection1, way1 = find_nearest_road(final_node_table, final_way_table, final_relation_table,
@@ -185,7 +199,7 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
                                                   possible_relations2, [lat2, lng2])
             if way1 < 0:
                 if FLAG_DEBUG:
-                    print("Error while running find_nearest_road in {}, line {}".format(filename, i+1))
+                    print("Error while running find_nearest_road in {}, line {}".format(filename, i + 1))
                 continue
 
             # print('{}:{}'.format(way,projection))
@@ -203,12 +217,22 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
             # path may be used
             # See route 67, which openstreetmap marks as a backtrack for evidence of this problem
             if way1 == way2:
-                meta_speeds[way1][interval1].append(speed)
+                if interval1 == interval2:
+                    meta_speeds[way1][interval1].append(speed)
+                else:
+                    meta_speeds[way1][interval1].append(speed)
+                    meta_speeds[way1][interval2].append(speed)
                 # used_ways.add(way1)
                 # print('single speed: {}'.format(speed))
             else:
-                meta_speeds[way1][interval1].append(speed)
-                meta_speeds[way2][interval1].append(speed)
+                if interval1 == interval2:
+                    meta_speeds[way1][interval1].append(speed)
+                    meta_speeds[way2][interval1].append(speed)
+                else:
+                    meta_speeds[way1][interval1].append(speed)
+                    meta_speeds[way2][interval1].append(speed)
+                    meta_speeds[way1][interval2].append(speed)
+                    meta_speeds[way2][interval2].append(speed)
                 # used_ways.add(way1)
                 # used_ways.add(way2)
 
@@ -342,7 +366,7 @@ if __name__ == '__main__':
     final_way_table = map_dates[1]
     final_relation_table = map_dates[2]
 
-    time_slot_interval = 15
+    time_slot_interval = 5
 
     start_time = time.time()
     find_traffic_speed(date_str, final_node_table, final_way_table, final_relation_table,

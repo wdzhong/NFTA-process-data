@@ -1,33 +1,35 @@
 import json
-from tqdm import tqdm
+import os
+import shutil
 import sys
+import time
+
+from tqdm import tqdm
 
 sys.path.append('./')
-from helper.global_var import FLAG_DEBUG, SAVE_TYPE_PICKLE, PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE, \
-    PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE, PREDICT_ROAD_CONDITION_CONFIG_WEIGHT
+from helper.global_var import FLAG_DEBUG, PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE, \
+    PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE, PREDICT_ROAD_CONDITION_CONFIG_WEIGHT, GPILB_CACHE_PATH
 from pathlib import Path
-from helper.helper_time_range_index_to_str import time_range_index_to_str, time_range_index_to_time_range_str
+from helper.helper_time_range_index_to_str import time_range_index_to_time_range_str
 import predict_road_condition
 from helper.global_var import SAVE_TYPE_PICKLE
 from helper.graph_reader import graph_reader
 from datetime import datetime, timedelta
 
 
-def predict_speed_dict_to_json(predict_speed_dict, target_date_str, time_slot_interval, interval_idx,
-                               final_way_table, way_types, way_type_avg_speed_limit,
-                               save_path="cache/predict_result/{0}/{1}/{2}.json"):
-    '''
-    TODO:
-    '''
+def get_output_dict(predict_speed_dict, predict_time, time_slot_interval, interval_idx,
+                    final_way_table, way_types, way_type_avg_speed_limit):
     output_dict = {
         "generate_timestr": datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
         "generate_timestamp": int(datetime.today().timestamp()),
         "time_slot_interval": time_slot_interval,
         "interval_idx": interval_idx,
-        "predict_time_range": "{:s}-{:s}-{:s} {}".format(target_date_str[:4], target_date_str[4:6], target_date_str[6:],
-                                                         time_range_index_to_time_range_str(interval_idx,
-                                                                                            interval_idx + 1,
-                                                                                            time_slot_interval)),
+        "predict_time_range": "{:0>4d}-{:0>2d}-{:0>2d} {}".format(predict_time.year, predict_time.month,
+                                                                  predict_time.day,
+                                                                  time_range_index_to_time_range_str(interval_idx,
+                                                                                                     interval_idx + 1,
+                                                                                                     time_slot_interval)
+                                                                  ),
         "road_speed": {}
     }
     for way, single_road_speed in predict_speed_dict.items():
@@ -37,15 +39,74 @@ def predict_speed_dict_to_json(predict_speed_dict, target_date_str, time_slot_in
         else:
             speed_ratio = 1.0
         if way in final_way_table:
-
             way_dict = {
                 "speed": round(single_road_speed, 2),
                 "speed_ratio": round(speed_ratio, 2)
             }
 
             output_dict["road_speed"][way] = way_dict
+    return output_dict
 
-    temp_filepath = Path(save_path.format(target_date_str, time_slot_interval, interval_idx))
+
+def get_output_dict_with_less_parameter(predict_speed_dict, target_dt, time_slot_interval):
+    save_filename_list = ["way_types", "way_type_avg_speed_limit", "final_way_table"]
+    temp_map_dates = graph_reader(Path("graph/"), SAVE_TYPE_PICKLE, save_filename_list)
+    way_types = temp_map_dates[0]
+    way_type_avg_speed_limit = temp_map_dates[1]
+    final_way_table = temp_map_dates[2]
+
+    interval_idx = (target_dt.hour * 60 + target_dt.minute) // time_slot_interval
+
+    return get_output_dict(predict_speed_dict, target_dt, time_slot_interval, interval_idx, final_way_table,
+                           way_types, way_type_avg_speed_limit)
+
+
+def predict_speed_dict_to_json(predict_speed_dict, predict_time, time_slot_interval, interval_idx,
+                               final_way_table, way_types, way_type_avg_speed_limit,
+                               save_path=GPILB_CACHE_PATH):
+    """
+    Get the predict speed dict and save it into a file in JSON format
+
+    Parameters
+    ----------
+    predict_speed_dict: Dictionary
+        Return of predict_road_condition.compute_speed_dict()
+        A dictionary that use way_id as key and the predict bus speed on that road at the given time as value.
+        When there is an error, it will return a dictionary with key "Error" and the detail of the error as the value
+
+    predict_time: datetime
+        Time of predict in datetime format
+
+    time_slot_interval:Int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min.
+
+    interval_idx: Int
+        The index of the period of the predict_timestamp in predict_road_condition
+
+    final_way_table: Dict
+        A dictionary that stored the way id and a list of node id's as a key value pair.
+
+    way_types: Dictionary
+        A dictionary that use way_id as key and the type of the way as the value
+
+    way_type_avg_speed_limit: Dictionary
+        A dictionary that use way_type as key and the average speed limit of that type of way as the value
+
+    save_path: String
+        path where the json file save
+        {0} is a 8-digit date_str in yyyyMMdd format.
+        {1} is the value of interval
+        {2} is the interval_idx
+        by default it will use the project's file format.
+
+    Returns
+    -------
+    None
+    """
+    output_dict = get_output_dict(predict_speed_dict, predict_time, time_slot_interval, interval_idx,
+                                  final_way_table, way_types, way_type_avg_speed_limit)
+    temp_filepath = Path(save_path.format(predict_time.strftime("%Y%m%d"), time_slot_interval, interval_idx))
     temp_filepath.parent.mkdir(parents=True, exist_ok=True)
     with open(temp_filepath, 'w') as f:
         # json.dump(output_dict, f, indent=2)
@@ -78,9 +139,37 @@ def generate_prediction_in_large_batches(predict_timestamp=int(datetime.now().ti
                                          config_history_date=PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATE,
                                          config_history_data_range=PREDICT_ROAD_CONDITION_CONFIG_HISTORY_DATA_RANGE,
                                          config_weight=PREDICT_ROAD_CONDITION_CONFIG_WEIGHT):
-    '''
-    TODO:
-    '''
+    """
+    Generate prediction in large batches (in day(s))
+
+    predict_timestamp: int (timestamp)
+        10-digit timestamp, use current time if not provided
+        This timestamp will be use to get the date ONLY
+
+    interval: int
+        The length of each time interval in minutes. The input number should be divisible by 1440 (24 hour * 60 min)
+        by default it is 5 min.
+
+    config_history_date: List of int
+        This parameter specifies which historical days of data the function needs to use in the computation. It should
+        be a List of int, where each int means the offset of the day that need predict. e.g. -1 means yesterday
+        by default it will use a predetermined configuration
+
+    config_history_data_range: List of int
+        This parameter specifies the range and the order of using the nearby data to replace the missing data. If the
+        value is [-1, 1] and if the data we are looking for located on the ith index is missing. We will try to use the
+        value at i-1 or i+1 as the data located in ith index.
+        by default it will use a predetermined configuration
+
+    config_weight: List of float
+        This parameter specifies the weight of each day's data when compute the weighted sum.
+        by default it will use a predetermined configuration
+
+    Returns
+    -------
+    None
+
+    """
     # Check input, load data and preparation
     if len(config_history_date) != len(config_weight):
         print("error: len(config_history_date) != len(config_weight)")
@@ -128,15 +217,49 @@ def generate_prediction_in_large_batches(predict_timestamp=int(datetime.now().ti
                                                       full_way_id_set,
                                                       usable_way_id_set, config_history_data_range, config_weight,
                                                       way_graph, way_types, way_type_avg_speed_limit)
-        predict_speed_dict_to_json(predict_speed_dict, predict_time_date_str, interval, interval_idx,
+        predict_speed_dict_to_json(predict_speed_dict, predict_time, interval, interval_idx,
                                    final_way_table, way_types, way_type_avg_speed_limit)
 
     return 0
 
 
-if __name__ == '__main__':
-    generate_way_structure_json()
-    generate_prediction_in_large_batches(1596110400, interval=15)  # 2020 / 07 / 30
-    generate_prediction_in_large_batches(1596196800, interval=15)  # 2020 / 07 / 31
-    generate_prediction_in_large_batches(1596283200, interval=15)  # 2020 / 08 / 01
+def clean_old_files(day_before_clean=7, cache_root="cache/predict_result"):
+    cache_root = Path(cache_root)
+    current_time = datetime.now()
+    for name in os.listdir(cache_root):
+        full_path = cache_root / name
+        if os.path.isdir(full_path):
+            if len(name) >= 8:
+                date_of_folder = datetime(int(name[0:4]), int(name[4:6]), int(name[6:8]))
+                if (current_time - date_of_folder).days > day_before_clean:
+                    print("Delete {} due to it is {} day(s) before today".format(full_path, day_before_clean))
+                    shutil.rmtree(full_path)
 
+
+if __name__ == '__main__':
+    if len(sys.argv) < 1:
+        print("Usage:")
+        print("./script/generate_prediction_in_large_batches.py [timestamp]")
+        print("")
+        print("Optional:")
+        print("timestamp  : 10-digit timestamp, use current time if not provided")
+        exit(0)
+    if len(sys.argv) >= 2:
+        current_timestamp = int(sys.argv[1])
+    else:
+        current_timestamp = int(datetime.now().timestamp())
+
+    clean_old_files()
+
+    day_offsets = [0, 1, 2, 3, 4, 5, 6, 7]
+    start = time.process_time()
+    for day_offset in day_offsets:
+        timestamp = current_timestamp + (day_offset * 86400)  # 24 hour * 60 min * 60 sec = 86400 s = 1 day
+        generate_prediction_in_large_batches(timestamp, interval=15)
+    if FLAG_DEBUG:
+        print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))
+
+    generate_way_structure_json()
+    # generate_prediction_in_large_batches(1596110400, interval=15)  # 2020 / 07 / 30
+    # generate_prediction_in_large_batches(1596196800, interval=15)  # 2020 / 07 / 31
+    # generate_prediction_in_large_batches(1596283200, interval=15)  # 2020 / 08 / 01

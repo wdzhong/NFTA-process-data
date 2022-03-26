@@ -1,13 +1,13 @@
 import os
 import platform
 import re
-
 import sys
 import time
-from osm_handler import OSMHandler
-from helper.graph_writer import graph_writer
 from pathlib import Path
+
 from helper.global_var import FLAG_DEBUG, SAVE_TYPE_JSON, SAVE_TYPE_PICKLE
+from helper.graph_writer import graph_writer
+from osm_handler import OSMHandler
 
 
 def debug_show_all_route(relations, final_node_table, final_way_table):
@@ -213,14 +213,12 @@ def get_map_data(map_file, result_file_path, save_type):
         else:
             way_types[way_id] = "unclassified"
 
-
     # To simplify the result, we round the result to the nearest multiple of 5.
     for key, value in way_type_avg_speed_limit.items():
         if len(value) != 0:
             way_type_avg_speed_limit[key] = 5 * round(sum(value) / len(value) / 5)
         else:
             way_type_avg_speed_limit[key] = 0
-
 
     # Save data to files
     save_filename_list = ["final_node_table", "final_way_table", "final_relation_table", "relations", "way_graph",
