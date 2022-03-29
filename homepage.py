@@ -67,14 +67,14 @@ def retrieve_traffic_data(timestamp, time_interval):
 
     if dt_diff_day >= 0:
         if dt_diff_min <= 120:
-            # Less then 2 hours
+            # Less than 2 hours
             return jsonify({"error": "no_data"})
         else:
             # find the nearest interval of the timestamp based on the time_interval size
             interval_idx = get_nearest_interval(dt_target, time_interval)
 
             data_path = Path(GPILB_CACHE_PATH.format(dt_target.strftime('%Y%m%d'), time_interval,
-                                                                           interval_idx))
+                                                     interval_idx))
             if data_path.is_file():
                 with open(data_path, 'r') as fp:
                     data = json.load(fp)
@@ -152,6 +152,10 @@ def get_nearest_interval(dt: datetime, interval_size: int) -> int:
 
 
 if __name__ == '__main__':
+    # app.run(host="** host here **", port=443,
+    #         ssl_context=("ssl_certificate/** pem file here **.pem",
+    #                      "ssl_certificate/** key file here **.key"),
+    #         debug=True)
     app.run(host="localhost", port=82, debug=True)
 
 '''

@@ -18,6 +18,7 @@ GOOGLE_MAPS_API_KEY = api_key.GOOGLE_MAPS_API_KEY
 CONFIG_DATA_FOLDER = "data/"
 CONFIG_SINGLE_DAY_FOLDER = "data/{0}"
 CONFIG_ALL_DAY_RAW_DATA_FILE = "data/{0}/{0}.csv"
+CONFIG_ALL_DAY_ARCHIVED_RAW_DATA_FILE = "data/{0}/raw_{0}.zip"
 CONFIG_RAW_DATA_FOLDER = "data/{0}/raw"
 CONFIG_SINGLE_DAY_RESULT_FILE = "data/{0}/result/{0}_{1}_min_road.csv"
 

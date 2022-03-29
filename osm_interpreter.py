@@ -92,6 +92,16 @@ def get_map_data(map_file, result_file_path, save_type):
     relations: List
         A list that contains the same information as final_relation_table, albeit in a less easily accessed form of a
         list of 3-tuples.
+
+    way_graph: Graph (Dictionary)
+        A graph use way_id as the node of the graph and use [OSM's node] as the edge of the graph. Use adjacency list
+        to represent the graph.
+
+    way_types: Dictionary
+        A dictionary that use way_id as key and the type of the way as the value
+
+    way_type_avg_speed_limit: Dictionary
+        A dictionary that use way_type as key and the average speed limit of that type of way as the value
     """
     osmhandler = OSMHandler()
     osmhandler.apply_file(str(map_file))
@@ -185,8 +195,11 @@ def get_map_data(map_file, result_file_path, save_type):
                         way_graph_by_set[way].add(way_other)
                     else:
                         way_graph_by_set[way] = {way_other}
+        else:
+            for way in ways:
+                way_graph_by_set[way] = set()
 
-    # Convert the graph to a adjacency list format data structure
+    # Convert the graph to an adjacency list format data structure
     way_graph_by_list = {}
     for key, value in way_graph_by_set.items():
         if key in final_way_table:
@@ -275,7 +288,8 @@ if __name__ == '__main__':
         print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))
     print("Done")
 
-    # Todo: This bug needs to be fixed. (Shiluo)
+    # Todo: This bug needs to be fixed.
+    #  In some case the script won't stop in windows, need to kill itself in order to stop (Shiluo)
     if platform.system() != "Windows":
         exit(0)
     else:
