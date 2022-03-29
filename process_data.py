@@ -1,6 +1,8 @@
 import os
 import re
+import shutil
 import sys
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import List
@@ -36,7 +38,15 @@ def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
         for i in range(data.shape[1] - len(columns)):
             columns.append("unknown_columns_{}".format(i))
     data.columns = columns
+
+    # remove lines that have missing data
+    data = data.dropna(subset=["run_id"])
+
+    # remove empty_columns data
     data = data.drop(columns='empty_columns')
+
+    # Set route_id_curr column data to int
+    data[["route_id_curr"]] = data[["route_id_curr"]].astype(int)
 
     # remove lines with 8000 <= vehicle_id < 9000, these vehicles are paratransit vehicle
     data = data[(data.vehicle_id < 8000) | (data.vehicle_id >= 9000)]
@@ -56,7 +66,7 @@ def load_data_file(data_path: Path, columns: List[str]) -> pd.DataFrame:
     # 216 - McKinley Mall-Gowanda (stopped May 1, 2012)
 
     # filter time
-    data = data[data.apply(lambda row: global_var.PROCESS_DATA_START_TIME <=
+    data = data[data.apply(lambda row: not pd.isna(row['location time']) and global_var.PROCESS_DATA_START_TIME <=
                                        datetime.fromtimestamp(row['location time']).hour <=
                                        global_var.PROCESS_DATA_END_TIME, axis=1)]
 
@@ -123,7 +133,9 @@ def merge_data_files(columns: List[str], data_root: Path, all_in_one_file: Path,
     all_in_one_selected.to_csv(all_in_one_file, index=False)
 
 
-def preprocess_data(date_str: str, overwrite: bool = False, min_file_size: int = 10) -> None:
+def preprocess_data(date_str: str, overwrite: bool = False, min_file_size: int = 10,
+                    archive_after_preprocess: bool = False,
+                    skip_if_archived: bool = False) -> None:
     """
     Preprocess data under given directory.
 
@@ -150,12 +162,39 @@ def preprocess_data(date_str: str, overwrite: bool = False, min_file_size: int =
                'off route', 'run_id', 'empty_columns']
 
     full_path = Path(global_var.CONFIG_RAW_DATA_FOLDER.format(date_str))
-    if full_path.is_dir():
+    if full_path.is_dir() or archive_zip_file_exist(date_str):
         merged_file = Path(global_var.CONFIG_ALL_DAY_RAW_DATA_FILE.format(date_str))
         if not merged_file.is_file() or overwrite:
+            if (not skip_if_archived) and archive_zip_file_exist(date_str):
+                archive_unzip(date_str)
             merge_data_files(columns, full_path, merged_file, min_file_size)
+            if archive_after_preprocess and date_str != (datetime.today()).strftime('%Y%m%d'):
+                archive_raw_data(date_str)
         else:
-            print(f"ignore {full_path} files smaller than {min_file_size} byte")
+            print(f"Ignore {full_path} as this folder has already processed")
+
+
+def archive_raw_data(date_str):
+    raw_path = global_var.CONFIG_RAW_DATA_FOLDER.format(date_str)
+    zip_path = global_var.CONFIG_ALL_DAY_ARCHIVED_RAW_DATA_FILE.format(date_str)
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_LZMA) as z:
+        for path, dir_names, filenames in os.walk(raw_path):
+            fpath = path.replace(raw_path, '')
+            for filename in tqdm(filenames):
+                z.write(os.path.join(path, filename), os.path.join(fpath, filename))
+    shutil.rmtree(raw_path)
+
+
+def archive_unzip(date_str):
+    raw_path = global_var.CONFIG_RAW_DATA_FOLDER.format(date_str)
+    zip_path = global_var.CONFIG_ALL_DAY_ARCHIVED_RAW_DATA_FILE.format(date_str)
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(raw_path)
+
+
+def archive_zip_file_exist(date_str):
+    return Path(global_var.CONFIG_ALL_DAY_ARCHIVED_RAW_DATA_FILE.format(date_str)).is_file()
+
 
 
 def get_routes_from_file(data_file: Path):
