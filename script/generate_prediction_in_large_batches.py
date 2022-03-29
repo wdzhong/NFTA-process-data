@@ -18,7 +18,51 @@ from datetime import datetime, timedelta
 
 
 def get_output_dict(predict_speed_dict, predict_time, time_slot_interval, interval_idx,
-                    final_way_table, way_types, way_type_avg_speed_limit):
+                    final_node_table, final_way_table, way_types, way_type_avg_speed_limit):
+
+    output_dict = {
+        "boundaries": {
+            "lat1": 42.233307124,  # Hard code boundaries for now
+            "lon1": -78.835716683,
+            "lat2": 43.15842251,
+            "lon2": -78.76853003
+        },
+        "date": datetime.today().strftime('%m/%d/%Y'),
+        "time": datetime.today().strftime('%I:%M:%S %p'),
+        "timestamp": int(datetime.today().timestamp()),
+        "time_slot_interval": time_slot_interval,
+        "interval_idx": interval_idx,
+        "predict_time_range": "{:0>4d}-{:0>2d}-{:0>2d} {}".format(predict_time.year, predict_time.month,
+                                                                  predict_time.day,
+                                                                  time_range_index_to_time_range_str(interval_idx,
+                                                                                                     interval_idx + 1,
+                                                                                                     time_slot_interval)
+                                                                  ),
+        "links": []
+    }
+
+    for way_id, single_road_speed in predict_speed_dict.items():
+        speed_limit = way_type_avg_speed_limit[way_types.get(way_id, "unclassified")]
+        if speed_limit > 0:
+            speed_ratio = single_road_speed / speed_limit
+        else:
+            speed_ratio = 1.0
+
+        if way_id not in final_way_table:
+            continue
+
+        way_dict = {
+            "status": road_condition_to_color(speed_ratio),
+            "points": get_node_list(way_id, final_way_table, final_node_table)
+        }
+
+        output_dict["links"].append(way_dict)
+    return output_dict
+
+
+def get_output_dict_old(predict_speed_dict, predict_time, time_slot_interval, interval_idx,
+                        final_way_table, way_types, way_type_avg_speed_limit):
+
     output_dict = {
         "generate_timestr": datetime.today().strftime('%Y-%m-%d %H:%M:%S'),
         "generate_timestamp": int(datetime.today().timestamp()),
@@ -49,20 +93,21 @@ def get_output_dict(predict_speed_dict, predict_time, time_slot_interval, interv
 
 
 def get_output_dict_with_less_parameter(predict_speed_dict, target_dt, time_slot_interval):
-    save_filename_list = ["way_types", "way_type_avg_speed_limit", "final_way_table"]
+    save_filename_list = ["way_types", "way_type_avg_speed_limit", "final_way_table", "final_node_table"]
     temp_map_dates = graph_reader(Path("graph/"), SAVE_TYPE_PICKLE, save_filename_list)
     way_types = temp_map_dates[0]
     way_type_avg_speed_limit = temp_map_dates[1]
     final_way_table = temp_map_dates[2]
+    final_node_table = temp_map_dates[3]
 
     interval_idx = (target_dt.hour * 60 + target_dt.minute) // time_slot_interval
 
-    return get_output_dict(predict_speed_dict, target_dt, time_slot_interval, interval_idx, final_way_table,
-                           way_types, way_type_avg_speed_limit)
+    return get_output_dict(predict_speed_dict, target_dt, time_slot_interval, interval_idx,final_node_table,
+                           final_way_table, way_types, way_type_avg_speed_limit)
 
 
 def predict_speed_dict_to_json(predict_speed_dict, predict_time, time_slot_interval, interval_idx,
-                               final_way_table, way_types, way_type_avg_speed_limit,
+                               final_node_table, final_way_table, way_types, way_type_avg_speed_limit,
                                save_path=GPILB_CACHE_PATH):
     """
     Get the predict speed dict and save it into a file in JSON format
@@ -83,6 +128,9 @@ def predict_speed_dict_to_json(predict_speed_dict, predict_time, time_slot_inter
 
     interval_idx: Int
         The index of the period of the predict_timestamp in predict_road_condition
+
+    final_node_table: Dict
+        A dictionary that stored the node id and the latitude/longitude coordinates as a key value pair.
 
     final_way_table: Dict
         A dictionary that stored the way id and a list of node id's as a key value pair.
@@ -105,7 +153,7 @@ def predict_speed_dict_to_json(predict_speed_dict, predict_time, time_slot_inter
     None
     """
     output_dict = get_output_dict(predict_speed_dict, predict_time, time_slot_interval, interval_idx,
-                                  final_way_table, way_types, way_type_avg_speed_limit)
+                                  final_node_table, final_way_table, way_types, way_type_avg_speed_limit)
     temp_filepath = Path(save_path.format(predict_time.strftime("%Y%m%d"), time_slot_interval, interval_idx))
     temp_filepath.parent.mkdir(parents=True, exist_ok=True)
     with open(temp_filepath, 'w') as f:
@@ -218,7 +266,7 @@ def generate_prediction_in_large_batches(predict_timestamp=int(datetime.now().ti
                                                       usable_way_id_set, config_history_data_range, config_weight,
                                                       way_graph, way_types, way_type_avg_speed_limit)
         predict_speed_dict_to_json(predict_speed_dict, predict_time, interval, interval_idx,
-                                   final_way_table, way_types, way_type_avg_speed_limit)
+                                   final_node_table, final_way_table, way_types, way_type_avg_speed_limit)
 
     return 0
 
@@ -236,6 +284,33 @@ def clean_old_files(day_before_clean=7, cache_root="cache/predict_result"):
                     shutil.rmtree(full_path)
 
 
+def road_condition_to_color(speed_ratio):
+    if speed_ratio < 0.1:
+        return "#b52f3b"
+    elif speed_ratio < 0.2:
+        return "#da8015"
+    elif speed_ratio < 0.3:
+        return "#f2b021"
+    elif speed_ratio < 0.4:
+        return "#e5ce72"
+    elif speed_ratio < 0.5:
+        return "#b9cb67"
+    else:
+        return "#34eb95"
+
+
+def get_node_list(way_id, final_way_table, final_node_table):
+    if way_id not in final_way_table:
+        return []
+
+    result = []
+    for node_id in final_way_table[way_id]:
+        if node_id not in final_node_table:
+            continue
+        result.append(final_node_table[node_id])
+    return result
+
+
 if __name__ == '__main__':
     if len(sys.argv) < 1:
         print("Usage:")
@@ -250,6 +325,7 @@ if __name__ == '__main__':
         current_timestamp = int(datetime.now().timestamp())
 
     clean_old_files()
+    current_timestamp = 1643010848
 
     day_offsets = [0, 1, 2, 3, 4, 5, 6, 7]
     start = time.process_time()
@@ -259,7 +335,7 @@ if __name__ == '__main__':
     if FLAG_DEBUG:
         print("[Debug] Total runtime is %.3f s" % (time.process_time() - start))
 
-    generate_way_structure_json()
+    # generate_way_structure_json()
     # generate_prediction_in_large_batches(1596110400, interval=15)  # 2020 / 07 / 30
     # generate_prediction_in_large_batches(1596196800, interval=15)  # 2020 / 07 / 31
     # generate_prediction_in_large_batches(1596283200, interval=15)  # 2020 / 08 / 01

@@ -28,7 +28,9 @@ if __name__ == '__main__':
             if date_str != today_str:
                 # print("python3.6 find_traffic_speed.py {}".format(date_str))
                 # process_data part
-                process_data.preprocess_data(date_str, overwrite=True, min_file_size=10)
+                process_data.preprocess_data(date_str, overwrite=True, min_file_size=10, archive_after_preprocess=True,
+                                             skip_if_archived=False)
+
 
                 # reformat_data part
                 reformat_data.reformat_by_bus(date_str)
