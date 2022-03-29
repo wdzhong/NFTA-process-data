@@ -197,7 +197,8 @@ def get_map_data(map_file, result_file_path, save_type):
                         way_graph_by_set[way] = {way_other}
         else:
             for way in ways:
-                way_graph_by_set[way] = set()
+                if way not in way_graph_by_set:
+                    way_graph_by_set[way] = set()
 
     # Convert the graph to an adjacency list format data structure
     way_graph_by_list = {}
