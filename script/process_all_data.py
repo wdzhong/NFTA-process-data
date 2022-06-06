@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import sys
 from pathlib import Path
 from tqdm import tqdm
@@ -7,7 +8,7 @@ sys.path.append('./')
 import process_data
 import reformat_data
 import find_traffic_speed
-from helper.global_var import SAVE_TYPE_PICKLE
+from helper.global_var import SAVE_TYPE_PICKLE, CONFIG_SINGLE_DAY_FOLDER
 from helper.graph_reader import graph_reader
 from datetime import datetime
 
@@ -41,3 +42,5 @@ if __name__ == '__main__':
                 for interval in time_slot_intervals:
                     find_traffic_speed.find_traffic_speed(date_str, final_node_table, final_way_table,
                                                           final_relation_table, time_slot_interval=interval)
+                sorted_dir = Path(CONFIG_SINGLE_DAY_FOLDER.format(date_str)) / "sorted"
+                shutil.rmtree(sorted_dir)
