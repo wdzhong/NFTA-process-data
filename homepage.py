@@ -8,7 +8,7 @@ import pickle
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, redirect
 
 import predict_road_condition
 import script.generate_prediction_in_large_batches as predict_result_helper
@@ -151,12 +151,16 @@ def get_nearest_interval(dt: datetime, interval_size: int) -> int:
     return total_minutes // interval_size
 
 
+@app.before_request
+def foo():
+    return redirect("https://www.buffalo.edu")
+
+
 if __name__ == '__main__':
-    # app.run(host="** host here **", port=443,
-    #         ssl_context=("ssl_certificate/** pem file here **.pem",
-    #                      "ssl_certificate/** key file here **.key"),
-    #         debug=True)
-    app.run(host="localhost", port=82, debug=True)
+    app.run(host="nfta-process-data-test.ishiluo.cn", port=8963,
+            ssl_context=("ssl_certificate/nfta-process-data-test.ishiluo.cn_bundle.pem",
+                         "ssl_certificate/nfta-process-data-test.ishiluo.cn.key"),
+            debug=True)
 
 '''
 references

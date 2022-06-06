@@ -106,33 +106,15 @@ def get_map_data(map_file, result_file_path, save_type):
     osmhandler = OSMHandler()
     osmhandler.apply_file(str(map_file))
 
-    latitudes = []
-    longitudes = []
-    ways = []
     relations = []
-    node_table = {}
-    way_table = {}
+    node_table = osmhandler.node_table
+    way_table = osmhandler.way_table
     final_node_table = {}
     final_way_table = {}
     final_relation_table = {}
     used_nodes = set()
     used_ways = set()
-    way_tag_table = {}
-
-    for node in osmhandler.nodes:
-        latitudes.append(node[2].lat)
-        longitudes.append(node[2].lon)
-        node_table.update({node[1]: [node[2].lat, node[2].lon]})
-    if FLAG_DEBUG:
-        print("[Debug] len(latitudes) = %d" % len(latitudes))
-
-    for way in osmhandler.ways:
-        ways.append(way)
-        way_table.update({way[0]: way[1]})
-        way_tag_table.update({way[0]: way[2]})
-        # print(way[2])
-    if FLAG_DEBUG:
-        print("[Debug] len(ways) = %d" % len(ways))
+    way_tag_table = osmhandler.way_tag_table
 
     # In the OSMHandler, I only saved relations that had NFTA in the name,
     # but I still had to save all of the nodes and ways because they don't
@@ -159,13 +141,13 @@ def get_map_data(map_file, result_file_path, save_type):
     # Saves the final important nodes, ways, and relations to a format that is
     # more practical for my purposes: the dictionary.
 
-    for key, value in node_table.items():
-        if key in used_nodes:
-            final_node_table.update({key: value})
+    for node_id in used_nodes:
+        if node_id in node_table:
+            final_node_table[node_id] = node_table[node_id]
 
-    for key, value in way_table.items():
-        if key in used_ways:
-            final_way_table.update({key: value})
+    for way_id in used_ways:
+        if way_id in way_table:
+            final_way_table[way_id] = way_table[way_id]
 
     for relation in relations:
         final_relation_table.update({relation[0]: [relation[1], relation[2]]})
@@ -296,6 +278,6 @@ if __name__ == '__main__':
     else:
         print("")
         print("Known BUG:")
-        print("For some unknown reason, this python script cannot close correctly on some Windows")
+        print("For some unknown reason, this python script cannot close correctly on some Windows System")
         print("Killing the program ...")
         os.kill(os.getpid(), 9)
