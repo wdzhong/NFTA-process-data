@@ -15,8 +15,8 @@ def get_history_data(current_timestamp, ways_list, interval, hours, days, weeks)
 def get_recent_hours_data(current_timestamp, ways_list, hours, interval):
     current_time = datetime.fromtimestamp(current_timestamp)
     # print(current_time)
-    end_interval_index = round_down_to_interval_index(current_time, interval) - 1
-    start_interval_index = end_interval_index - int((hours * 60) // interval) - 1
+    end_interval_index = round_down_to_interval_index(current_time, interval)
+    start_interval_index = end_interval_index - int((hours * 60) // interval)
     # print(start_interval_index, end_interval_index)
     if hours >= 24:
         raise ValueError("hours should be less than 24 hours")
