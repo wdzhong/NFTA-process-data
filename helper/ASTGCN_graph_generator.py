@@ -46,7 +46,7 @@ def get_ASTGCN_graph(output_csv_path, final_node_table, final_way_table, way_gra
     return
 
 
-def get_ASTGCN_sub_graph(output_csv_path, final_node_table, final_way_table, way_graph):
+def get_ASTGCN_sub_graph(output_path, final_node_table, final_way_table, way_graph):
     ways_location = get_ways_location(final_node_table, final_way_table)
     way_id_to_dataset = []
     dataset = []
@@ -91,18 +91,24 @@ def get_ASTGCN_sub_graph(output_csv_path, final_node_table, final_way_table, way
     plt.cla()
     plt.close()
 
-    # 12281461 93405445 True
     for group_id, ways in grouping_information.items():
-        with open(output_csv_path.format(group_id), 'w', newline='') as f:
+        used_way_id = []
+        with open(output_path.format(group_id, "csv"), 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerow(["from", "to", "distance"])
             for way_id in ways:
+                used_way_id.append(way_id)
                 neighbors = way_graph[str(way_id)]
                 for neighbor in neighbors:
                     if neighbor not in ways:
                         continue
                     row_data = [way_id, neighbor, compute_distance(way_id, neighbor, ways_location)]
                     writer.writerow(row_data)
+        used_way_id.sort()
+
+        with open(output_path.format(group_id, "txt"), 'w') as f:
+            for i in used_way_id:
+                f.write(str(i)+"\n")
     return
 
 
@@ -119,4 +125,4 @@ if __name__ == '__main__':
 
     # get_ASTGCN_graph("graph/NFTA.csv",final_node_table, final_way_table, way_graph)
 
-    get_ASTGCN_sub_graph("graph/NFTA_sub_graph_{0}.csv",final_node_table, final_way_table, way_graph)
+    get_ASTGCN_sub_graph("graph/NFTA_sub_graph_{0}.{1}",final_node_table, final_way_table, way_graph)

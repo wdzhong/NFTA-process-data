@@ -1,19 +1,21 @@
 import csv
 import datetime
-import pickle
-import time
-import os
-import sys
-import re
 import math
+import os
+import pickle
+import re
+import sys
+import time
+from pathlib import Path
+
+from tqdm import tqdm
+
+from find_nearest_road import find_nearest_road, distance
 from helper.debug_show_traffic_speed_map import show_traffic_speed
-from helper.helper_time_range_index_to_str import time_range_index_to_time_range_str
 from helper.global_var import FLAG_DEBUG, SAVE_TYPE_JSON, SAVE_TYPE_PICKLE, CONFIG_SINGLE_DAY_FOLDER, \
     CONFIG_SINGLE_DAY_RESULT_FILE
-from find_nearest_road import find_nearest_road, distance
 from helper.graph_reader import graph_reader
-from pathlib import Path
-from tqdm import tqdm
+from helper.helper_time_range_index_to_str import time_range_index_to_time_range_str
 
 
 def find_traffic_speed(date_str, final_node_table, final_way_table, final_relation_table,
@@ -111,7 +113,9 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
 
             # Takes the current data point and the next one and uses the pair
             # for each calculation of distance and speed.
+
             for temp_line in reader_csv_file:
+                # print(temp_line[10])
                 temp_total_second = int(temp_line[10][11:13]) * 3600 + int(temp_line[10][14:16]) * 60 + \
                                     int(temp_line[10][17:19])
                 if recent_data_time > 0 and temp_total_second < new_data_threshold_in_second_of_the_day:
@@ -161,6 +165,9 @@ def find_traffic_speed(date_str, final_node_table, final_way_table, final_relati
                 # this usually works but it may fail if the bus takes an unofficial road to the new bus route
                 # start location， so I skip
                 continue
+
+            # interval1_real_time = interval1 * 15
+            # print("{}:{}".format(interval1_real_time // 60, interval1_real_time % 60))
 
             possible_relations1 = set()
             if route_id1 in bus_route_to_relation_index:
