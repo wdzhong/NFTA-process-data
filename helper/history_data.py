@@ -29,7 +29,7 @@ def get_recent_hours_data(current_timestamp, ways_list, hours, interval):
         task_infos.append([current_time, start_interval_index, end_interval_index])
     results = []
     for i in task_infos:
-        results.append(results.append(get_history_data_by_interval_range(i[0], i[1], i[2], ways_list, interval)))
+        results.append(get_history_data_by_interval_range(i[0], i[1], i[2], ways_list, interval))
     if len(task_infos) > 1:
         result = np.hstack(results)
     else:
